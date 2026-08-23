@@ -65,3 +65,19 @@ To maintain strict release integrity, development and merging are separated into
 
 2. **Reconciliation / Merge / Release Tasks**:
    - Merging into `develop`, resolving merge conflicts, and promoting from `develop` → `test` → `production` is handled as an independent review task or by a designated merge agent/user request.
+
+---
+
+## 4. Autonomous Pull Request Review & Approval Protocol
+
+When encountering or handling open Pull Requests (including automated bot PRs like Dependabot):
+
+1. **Inspection & Invariant Check**:
+   - Agents must inspect the incoming diff, target base branch, and CI check results.
+   - Verify that all changes respect the **Zero External Dependencies** and **Strict CSP** invariants.
+
+2. **Base Branch Alignment**:
+   - Automated PRs must target **`develop`**. If a bot or contributor targets `production` or `test`, the agent must retarget or consolidate the update into `develop`.
+
+3. **Proactive Review & Approval Request**:
+   - When a PR falls within the agent's task scope, the agent must summarize the impact, verify local tests (`node --test`), and request explicit user authorization with a clear merge/promotion plan before executing promotions.
