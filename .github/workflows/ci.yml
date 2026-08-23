@@ -59,16 +59,22 @@ jobs:
         with:
           go-version: '1.22'
 
+      - name: Verify Go Formatting (gofmt)
+        run: |
+          if [ -n "$(gofmt -s -l .)" ]; then
+            echo "Unformatted Go files found:"
+            gofmt -s -l .
+            exit 1
+          fi
+
       - name: Run golangci-lint
         uses: golangci/golangci-lint-action@v6
-        env:
-          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
         with:
-          version: v1.60
-          args: --config=.golangci.yml
+          version: latest
+          args: --timeout=5m
 
       - name: Go Vet Analysis
-        run: go vet main.go
+        run: go vet ./...
 
       - name: Compile Binary
-        run: go build -v main.go
+        run: go build -v ./...
