@@ -1,0 +1,158 @@
+# E.'s Dev Dashboard
+
+A lightweight, secure, zero-dependency local developer dashboard for monitoring service metrics, build diagnostics, and simulating real-time traffic spikes.
+
+---
+
+## Features
+
+- **Key Metrics Overview**: Real-time display cards for Active Build Jobs, API Requests / Sec, and Memory Heap Usage.
+- **Interactive Metric & Pipeline Simulator**:
+  - **Traffic Spike Simulation**: Generates bounded realistic traffic spikes (350–850 req/s), calculates delta/percentage increases, and triggers smooth pulse animations via the Web Animations API.
+  - **Build Pipeline Controls**: Interactively `Queue Build`, `Complete Job`, or `Simulate Failure` with bounded capacity enforcement (0 to 10 max).
+  - **Memory Diagnostics & Telemetry**: Interactively `Trigger Server GC` or `Simulate Allocation` to test garbage collection and heap capacity thresholds.
+  - **Diagnostic Snapshots & Reports**: Export complete system state as a downloadable JSON file, copy formatted Markdown reports to clipboard, or clear the activity log.
+  - **Reset Controls**: Restores metrics to initial baseline values (142 req/s).
+- **Recent Pipeline Activity Log & Live Filtering**:
+  - Automatically records and displays the last 5 pipeline events in an accessible FIFO list with timestamps, machine-readable `<time datetime>`, and status badges (`Queued`, `Success`, `Failed`).
+  - **Severity Filters**: Filter events dynamically by `All`, `Queued`, `Success`, or `Failed` status.
+  - **Live Search**: Instantly search event messages and build IDs via an accessible search input.
+- **Live Go Runtime Telemetry & Health Monitoring**:
+  - Automatically queries the `/health` and `/api/telemetry` endpoints periodically (every 15s) and on window focus.
+  - Reports live Go memory statistics (`runtime.ReadMemStats` heap allocation, total system memory, GC cycle counts, active goroutines, and process PID).
+  - Displays dynamic status indicators (`Online`, `Offline`, or `Local File Mode` when opened directly without a server).
+- **Theme Switcher (Dark & Light)**:
+  - Persistent theme selection stored safely in `localStorage` via a resilient `safeStorage` wrapper.
+  - Early bootstrap script ([theme-init.js](file:///C:/Users/ethan/OneDrive/Desktop/antigravity_playground/theme-init.js)) in `<head>` to eliminate Flash of Unstyled Content (FOUC).
+- **Security & Accessibility (WCAG 2.2 Level AA)**:
+  - Strict Content Security Policy (CSP) and `X-Content-Type-Options: nosniff` header.
+  - "Skip to main content" keyboard bypass link (`.skip-link` / WCAG 2.4.1).
+  - High-contrast text (>4.5:1) and adaptive focus ring tokens (`--focus-ring-color` / WCAG 1.4.11).
+  - Minimum interactive target sizes (≥24×24px / 42px touch height / WCAG 2.2 SC 2.5.8).
+  - Server-side route whitelisting preventing unauthorized HTTP access to source code, tests, and binaries.
+  - Full keyboard accessible navigation (`:focus-visible`), ARIA attributes, semantic headings, machine-readable `<time datetime>`, and `prefers-reduced-motion` animation support.
+- **Automated Unit Testing**:
+  - Pure calculation, build state transitions, FIFO trimming, and storage utilities tested with the built-in Node.js test runner (`node:test`).
+
+---
+
+## Project Structure
+
+```text
+antigravity_playground/
+├── AGENTS.md           # Agent governance index & policy hierarchy
+├── index.html          # Main dashboard HTML structure with CSP and ARIA attributes
+├── style.css           # Responsive styles, CSS variables, dark/light themes, animations
+├── app.js              # Application logic (metrics, build pipeline, activity log, DOM rendering)
+├── theme-init.js       # Fast theme bootstrap script loaded in <head>
+├── test_dashboard.js   # Unit test suite for calculation logic, pipeline states & storage
+├── main.go             # Hardened Go HTTP server with route whitelisting & /health API
+├── server.exe          # Pre-compiled Windows binary of the Go server
+├── README.md           # Project documentation
+├── .agents/            # Agent development rules and workflows
+│   ├── rules/          # Active governance policies (architecture, security, testing, docs)
+│   └── workflows/      # Operational runbooks (documentation-maintenance)
+├── docs/               # System documentation & technical architecture
+│   └── architecture.md # Detailed architecture, component diagram, and data flow
+└── .vscode/
+    ├── launch.json     # VS Code debug profiles for Chrome
+    └── tasks.json      # VS Code tasks for building and starting the server
+```
+
+---
+
+## Getting Started / How to Run
+
+You can run the project locally using any of the following methods:
+
+### Option 1: Run with Go (Recommended)
+
+Requires [Go](https://go.dev/) (1.18+):
+
+```powershell
+go run main.go
+```
+
+To run on a custom port, use the `-port` flag or set the `PORT` environment variable:
+
+```powershell
+go run main.go -port 3000
+```
+
+Open [http://localhost:8080](http://localhost:8080) (or your chosen port) in your web browser.
+
+---
+
+### Option 2: Run the Precompiled Binary (Windows)
+
+Execute the included Windows binary directly:
+
+```powershell
+.\server.exe
+```
+
+Or on a custom port:
+
+```powershell
+.\server.exe -port 3000
+```
+
+---
+
+### Option 3: Open Directly in Browser (Local File Mode)
+
+Since the core dashboard has no mandatory external dependencies, you can open `index.html` directly in any web browser without running a server:
+
+```powershell
+Start-Process index.html
+```
+
+*(When running in Local File Mode, the status indicator will reflect `Local File Mode` and disable `/health` polling).*
+
+---
+
+### Option 4: Run via VS Code
+
+- **Run Task**: Press `Ctrl + Shift + P` -> `Tasks: Run Task` -> `Start Go Server`.
+- **Debug / Launch**: Press `F5` to launch Chrome connected to `http://localhost:8080` or directly inspect `index.html`.
+
+---
+
+## Verification & Testing
+
+### 1. Run Unit Tests (Node.js Test Runner)
+Executes unit tests for calculation boundaries, baseline values, fuzz testing, and error-tolerant storage:
+```powershell
+node --test test_dashboard.js
+```
+
+### 2. Verify Code Syntax
+```powershell
+# Check JavaScript syntax
+node --check app.js
+node --check theme-init.js
+
+# Check Go static analysis
+go vet main.go
+```
+
+### 3. Recompile Server Binary
+```powershell
+go build -o server.exe main.go
+```
+
+### 4. Verify HTTP Server Endpoints (While Server Is Running)
+```powershell
+# Check health status JSON
+curl.exe -s http://localhost:8080/health
+
+# Check live Go runtime telemetry JSON
+curl.exe -s http://localhost:8080/api/telemetry
+
+# Trigger server-side Garbage Collection (POST)
+curl.exe -s -X POST http://localhost:8080/api/gc
+
+# Verify that source files and binaries are protected (returns 404)
+curl.exe -I http://localhost:8080/main.go
+curl.exe -I http://localhost:8080/server.exe
+```

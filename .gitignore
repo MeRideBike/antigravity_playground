@@ -1,0 +1,13 @@
+﻿# Binaries and executables
+*.exe
+server
+server.exe
+
+# OS metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs and scratch
+*.log
+scratch/

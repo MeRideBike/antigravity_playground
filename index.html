@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:;">
+  <title>E.'s Dev Dashboard</title>
+  <script src="theme-init.js"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+  <div class="dashboard-container">
+    <header class="dashboard-header">
+      <div class="header-content">
+        <h1 class="title">E.'s Dev Dashboard</h1>
+        <p class="subtitle">Real-time local service metrics and build diagnostics</p>
+      </div>
+      <div class="header-actions">
+        <div class="status-indicator" id="status-indicator" role="status">
+          <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+          <span class="status-text" id="status-text">Detecting...</span>
+        </div>
+        <button id="btn-theme-toggle" class="btn-theme-toggle" type="button" aria-pressed="false" aria-label="Theme mode toggle" title="Toggle dark/light theme">
+          <span class="theme-icon-sun" aria-hidden="true">☀️</span>
+          <span class="theme-icon-moon" aria-hidden="true">🌙</span>
+        </button>
+      </div>
+    </header>
+
+    <main id="main-content" tabindex="-1">
+      <section class="metrics-grid" aria-label="Key developer metrics">
+        <article class="metric-card metric-card-builds" id="card-builds">
+          <div class="card-header">
+            <h3 class="metric-label">Active Build Jobs</h3>
+            <span class="card-icon" aria-hidden="true">⚙️</span>
+          </div>
+          <div class="metric-value-wrapper">
+            <span class="metric-value" id="val-builds">3</span>
+            <span class="metric-unit">tasks</span>
+          </div>
+          <div class="metric-footer">
+            <span class="tag tag-info">E.'s Pipeline &bull; Go &amp; JS</span>
+          </div>
+        </article>
+
+        <article class="metric-card metric-card-traffic" id="card-traffic">
+          <div class="card-header">
+            <h3 class="metric-label">API Requests / Sec</h3>
+            <span class="card-icon" aria-hidden="true">⚡</span>
+          </div>
+          <div class="metric-value-wrapper">
+            <span class="metric-value" id="val-traffic">142</span>
+            <span class="metric-unit">req/s</span>
+          </div>
+          <div class="metric-footer">
+            <span class="tag tag-success" id="traffic-tag">+12% vs avg</span>
+          </div>
+        </article>
+
+        <article class="metric-card metric-card-memory" id="card-memory">
+          <div class="card-header">
+            <h3 class="metric-label">Memory Heap Usage</h3>
+            <span class="card-icon" aria-hidden="true">💾</span>
+          </div>
+          <div class="metric-value-wrapper">
+            <span class="metric-value" id="val-memory">318</span>
+            <span class="metric-unit" id="memory-unit">MB</span>
+          </div>
+          <div class="metric-footer">
+            <span class="tag tag-purple" id="memory-tag">Limit: 1024 MB</span>
+          </div>
+        </article>
+      </section>
+
+      <section class="controls-section">
+        <div class="controls-card">
+          <div class="controls-info">
+            <h2 class="controls-title">Metric & Pipeline Simulator</h2>
+            <p class="controls-desc">Trigger traffic spikes, manage build pipelines, or run memory diagnostics with real-time telemetry.</p>
+          </div>
+          
+          <div class="controls-group">
+            <span class="controls-group-label">API Traffic:</span>
+            <div class="controls-actions">
+              <button id="btn-traffic-spike" class="btn btn-primary" type="button" aria-controls="card-traffic">
+                <span class="btn-icon" aria-hidden="true">⚡</span>
+                Simulate Traffic Spike
+              </button>
+              <button id="btn-reset" class="btn btn-secondary" type="button" aria-controls="card-traffic">
+                Reset Traffic
+              </button>
+            </div>
+          </div>
+
+          <div class="controls-group">
+            <span class="controls-group-label">Build Pipeline:</span>
+            <div class="controls-actions">
+              <button id="btn-queue-build" class="btn btn-primary" type="button" aria-controls="card-builds activity-list">
+                <span class="btn-icon" aria-hidden="true">⚙️</span>
+                Queue Build
+              </button>
+              <button id="btn-complete-build" class="btn btn-secondary" type="button" aria-controls="card-builds activity-list">
+                <span class="btn-icon" aria-hidden="true">✅</span>
+                Complete Job
+              </button>
+              <button id="btn-fail-build" class="btn btn-secondary" type="button" aria-controls="card-builds activity-list">
+                <span class="btn-icon" aria-hidden="true">❌</span>
+                Simulate Failure
+              </button>
+            </div>
+          </div>
+
+          <div class="controls-group">
+            <span class="controls-group-label">Memory Diagnostics:</span>
+            <div class="controls-actions">
+              <button id="btn-trigger-gc" class="btn btn-primary" type="button" aria-controls="card-memory activity-list">
+                <span class="btn-icon" aria-hidden="true">🧹</span>
+                Trigger Server GC
+              </button>
+              <button id="btn-simulate-alloc" class="btn btn-secondary" type="button" aria-controls="card-memory activity-list">
+                <span class="btn-icon" aria-hidden="true">💾</span>
+                Simulate Allocation
+              </button>
+            </div>
+          </div>
+
+          <div class="controls-group">
+            <span class="controls-group-label">Diagnostics & Reports:</span>
+            <div class="controls-actions">
+              <button id="btn-export-json" class="btn btn-secondary" type="button" aria-controls="update-status">
+                <span class="btn-icon" aria-hidden="true">📥</span>
+                Export JSON Snapshot
+              </button>
+              <button id="btn-copy-report" class="btn btn-secondary" type="button" aria-controls="update-status">
+                <span class="btn-icon" aria-hidden="true">📋</span>
+                Copy Markdown Report
+              </button>
+              <button id="btn-clear-log" class="btn btn-secondary" type="button" aria-controls="activity-list update-status">
+                <span class="btn-icon" aria-hidden="true">🗑️</span>
+                Clear Activity Log
+              </button>
+            </div>
+          </div>
+
+          <div class="update-status" id="update-status" aria-live="polite" aria-atomic="true">
+            Last updated: <span id="last-updated-time">Just now</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="activity-section" aria-label="Recent pipeline activity">
+        <div class="activity-card">
+          <div class="activity-header">
+            <div>
+              <h2 class="activity-title">Recent Pipeline Activity</h2>
+              <span class="activity-subtitle">Last 5 events</span>
+            </div>
+            <div class="activity-results-count" id="activity-results-count" aria-live="polite">Showing 2 events</div>
+          </div>
+
+          <div class="activity-controls">
+            <div class="activity-search-wrapper">
+              <input type="search" id="input-activity-search" class="activity-search-input" placeholder="Search events by keyword or ID..." aria-label="Search recent activity events">
+            </div>
+            <div class="activity-filter-group" role="group" aria-label="Filter events by status">
+              <button id="btn-filter-all" class="btn-filter active" type="button" aria-pressed="true">All</button>
+              <button id="btn-filter-queued" class="btn-filter" type="button" aria-pressed="false">Queued</button>
+              <button id="btn-filter-success" class="btn-filter" type="button" aria-pressed="false">Success</button>
+              <button id="btn-filter-failed" class="btn-filter" type="button" aria-pressed="false">Failed</button>
+            </div>
+          </div>
+
+          <ul class="activity-list" id="activity-list">
+            <!-- Activity log items dynamically populated by app.js -->
+          </ul>
+        </div>
+      </section>
+    </main>
+
+    <footer class="dashboard-footer">
+      <p>Local Developer Dashboard &bull; Vanilla HTML, CSS &amp; JavaScript &bull; No external dependencies</p>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
