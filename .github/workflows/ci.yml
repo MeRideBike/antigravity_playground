@@ -9,6 +9,8 @@ on:
       - 'feature/**'
       - 'agent/**'
       - 'fix/**'
+      - 'chore/**'
+      - 'docs/**'
   pull_request:
     branches:
       - develop
