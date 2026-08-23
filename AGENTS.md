@@ -30,6 +30,7 @@ All agent interactions must respect the modular rules in [`.agents/rules/`](file
 - [`.agents/rules/security.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/rules/security.md): Strict CSP (`no unsafe-inline`), Go HTTP route whitelisting, source code/binary download protection.
 - [`.agents/rules/testing-verification.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/rules/testing-verification.md): Mandatory Node.js test runner (`node --test`), syntax checks (`node -c`), and Go compilation verification.
 - [`.agents/rules/change-governance.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/rules/change-governance.md): Minimal change scope, no framework introduction, defensive storage access.
+- [`.agents/rules/git-workflow.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/rules/git-workflow.md): Feature branch isolation, Conventional Commits standards, and development vs. reconciliation separation.
 - [`.agents/rules/docs-sync.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/rules/docs-sync.md): Synchronizing `README.md` and `docs/` alongside functional changes.
 
 ---
@@ -40,7 +41,7 @@ All agent interactions must respect the modular rules in [`.agents/rules/`](file
 
 ---
 
-## 5. Git Branching & Promotion Workflow
+## 5. Git Branching, Commit Standards & Role Boundaries
 
 The repository follows a structured **Dev → Test → Release** lifecycle:
 
@@ -60,14 +61,11 @@ gitGraph
    merge test id: "Release to Main" tag: "v1.0"
 ```
 
-1. **Feature & Agent Branches (`feature/*`, `agent/*`, `fix/*`)**:
-   - Created off `develop`.
-   - Used for individual tasks, whether coded manually by the user or autonomously by subagents.
-2. **Development Baseline (`develop`)**:
-   - Active aggregation branch for ongoing development.
-   - All unit tests (`node --test`) and Go verification must pass before merging.
-3. **Testing / Staging (`test`)**:
-   - Pre-release validation branch.
-   - Used for staging end-to-end integration and manual verification.
-4. **Release (`main`)**:
-   - Protected, production-ready release branch. Only promoted from verified `test` builds.
+1. **Branch Isolation (`feature/*`, `agent/*`, `fix/*`)**:
+   - All development tasks MUST branch off `develop`.
+   - Direct commits to `develop`, `test`, or `main` are strictly forbidden for feature work.
+2. **Enterprise "Golden Standard" Commits**:
+   - Commits MUST follow Conventional Commits format (`feat(...)`, `fix(...)`, `docs(...)`, `test(...)`, `refactor(...)`, etc.) with concise, imperative subjects (max 72 chars) and rationale in the body.
+3. **Role Boundary & Separation of Concerns**:
+   - **Development Agent**: Builds feature, executes unit tests (`node --test`), syntax checks (`node -c`), writes golden commit, pushes to remote branch (`origin/feature/*`), and concludes.
+   - **Reconciliation / Merge Task**: Inspects diffs, verifies integration, and performs merges into `develop` → `test` → `main` in a distinct review/merge step.
