@@ -76,6 +76,7 @@ antigravity_playground/
 ├── theme-init.js               # Fast theme bootstrap script loaded in <head>
 ├── test_dashboard.js           # Unit test suite for calculation logic, pipeline states & storage
 ├── main.go                     # Hardened Go HTTP server with route whitelisting & telemetry API
+├── go.mod                      # Standard-library Go module definition (zero external deps)
 ├── CONTRIBUTING.md             # Contribution guidelines & branching standards
 ├── SECURITY.md                 # Security architecture & vulnerability policy
 ├── LICENSE                     # MIT Open Source License
