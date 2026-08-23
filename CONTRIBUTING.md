@@ -57,12 +57,16 @@ node --test --experimental-test-coverage test_dashboard.js
 node --check app.js
 node --check theme-init.js
 
-# 3. Verify Go Formatting & Static Analysis
-gofmt -s -d main.go
-go vet main.go
+# 3. Verify Go Formatting, Linting & Multi-Linter Analysis
+gofmt -s -l .
+go vet ./...
+staticcheck ./...
+errcheck ./...
+revive ./...
+ineffassign ./...
 
 # 4. Verify Go Compilation
-go build -v main.go
+go build -v ./...
 ```
 
 ---

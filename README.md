@@ -160,12 +160,13 @@ node --test --experimental-test-coverage test_dashboard.js
 node --check app.js
 node --check theme-init.js
 
-# Check Go formatting & static analysis
-gofmt -s -d main.go
-go vet main.go
-
-# Run golangci-lint (if installed locally)
-golangci-lint run
+# Check Go formatting, linting & static analysis
+gofmt -s -l .
+go vet ./...
+staticcheck ./...
+errcheck ./...
+revive ./...
+ineffassign ./...
 ```
 
 ### 3. Recompile Server Binary
