@@ -105,12 +105,12 @@
       <section class="controls-section" id="section-controls" aria-label="Metric and Pipeline Controls" draggable="true">
         <div class="controls-card">
           <div class="controls-info">
-            <h2 class="controls-title">Metric & Pipeline Simulator</h2>
+            <h2 class="controls-title">Metric &amp; Pipeline Simulator</h2>
             <p class="controls-desc">Trigger traffic spikes, manage build pipelines, or run memory diagnostics with real-time telemetry.</p>
           </div>
           
-          <div class="controls-group">
-            <span class="controls-group-label">API Traffic:</span>
+          <fieldset class="controls-group">
+            <legend class="controls-group-label">API Traffic:</legend>
             <div class="controls-actions">
               <button id="btn-traffic-spike" class="btn btn-primary" type="button" aria-controls="card-traffic">
                 <span class="btn-icon" aria-hidden="true">⚡</span>
@@ -120,10 +120,10 @@
                 Reset Traffic
               </button>
             </div>
-          </div>
+          </fieldset>
 
-          <div class="controls-group">
-            <span class="controls-group-label">Build Pipeline:</span>
+          <fieldset class="controls-group">
+            <legend class="controls-group-label">Build Pipeline:</legend>
             <div class="controls-actions">
               <button id="btn-queue-build" class="btn btn-primary" type="button" aria-controls="card-builds activity-list">
                 <span class="btn-icon" aria-hidden="true">⚙️</span>
@@ -138,10 +138,10 @@
                 Simulate Failure
               </button>
             </div>
-          </div>
+          </fieldset>
 
-          <div class="controls-group">
-            <span class="controls-group-label">Memory Diagnostics:</span>
+          <fieldset class="controls-group">
+            <legend class="controls-group-label">Memory Diagnostics:</legend>
             <div class="controls-actions">
               <button id="btn-trigger-gc" class="btn btn-primary" type="button" aria-controls="card-memory activity-list">
                 <span class="btn-icon" aria-hidden="true">🧹</span>
@@ -152,10 +152,10 @@
                 Simulate Allocation
               </button>
             </div>
-          </div>
+          </fieldset>
 
-          <div class="controls-group">
-            <span class="controls-group-label">Diagnostics & Reports:</span>
+          <fieldset class="controls-group">
+            <legend class="controls-group-label">Diagnostics &amp; Reports:</legend>
             <div class="controls-actions">
               <button id="btn-export-json" class="btn btn-secondary" type="button" aria-controls="update-status">
                 <span class="btn-icon" aria-hidden="true">📥</span>
@@ -170,7 +170,7 @@
                 Clear Activity Log
               </button>
             </div>
-          </div>
+          </fieldset>
 
           <div class="update-status" id="update-status" aria-live="polite" aria-atomic="true">
             Last updated: <span id="last-updated-time">Just now</span>
@@ -195,7 +195,7 @@
             </div>
           </div>
 
-          <div class="probes-grid" id="probes-grid" role="region" aria-live="polite">
+          <div class="probes-grid" id="probes-grid" role="region" aria-label="Service probe status cards" aria-live="polite">
             <!-- Dynamically populated probe cards -->
           </div>
         </div>
@@ -236,14 +236,15 @@
   </div>
 
   <!-- Command Palette Modal (Ctrl+K) -->
-  <dialog id="modal-command-palette" class="modal-palette" aria-label="Command Palette">
+  <dialog id="modal-command-palette" class="modal-palette" aria-labelledby="dialog-palette-title">
     <div class="palette-container">
       <div class="palette-header">
+        <h2 id="dialog-palette-title" class="sr-only">Command Palette</h2>
         <span class="palette-search-icon" aria-hidden="true">🔍</span>
-        <input type="search" id="input-command-palette" class="palette-input" placeholder="Type a command or filter (e.g., 'spike', 'gc', 'compact', 'probe')..." autocomplete="off" aria-autocomplete="list" aria-controls="palette-results">
+        <input type="search" id="input-command-palette" class="palette-input" aria-label="Search commands" placeholder="Type a command or filter (e.g., 'spike', 'gc', 'compact', 'probe')..." autocomplete="off" aria-autocomplete="list" aria-controls="palette-results">
         <button id="btn-close-palette" class="btn-dialog-close" type="button" aria-label="Close command palette">&times;</button>
       </div>
-      <ul id="palette-results" class="palette-results" role="listbox">
+      <ul id="palette-results" class="palette-results" role="listbox" aria-label="Command results">
         <!-- Dynamically populated command items -->
       </ul>
       <div class="palette-footer">
