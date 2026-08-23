@@ -98,4 +98,8 @@ When implementing features or bug fixes, developer agents MUST author unit tests
 ### D. Defensive Wrappers & Failure Modes
 - **Storage Failures**: Explicitly test `safeStorage` behavior under simulated `SecurityError`, missing `window.localStorage`, or `QuotaExceededError`.
 - **Telemetry Fallbacks**: Validate `parseTelemetry` handling of malformed payloads, non-numeric values, or missing fields without throwing unhandled exceptions.
+
+### E. Multi-Platform & Systems Portability Units
+- **Path Normalization**: Assert that URL and virtual filesystem routing behaves identically across Windows backslashes (`\`) and POSIX forward slashes (`/`) using `path.Clean` and `filepath.ToSlash`.
+- **Cross-Platform Compilation Invariants**: Ensure zero platform-specific syscalls without conditional build tags. All network handlers and embedded assets must compile and serve cleanly across Linux, Windows, and macOS.
 - **HTTP Routing Invariants**: In Go handlers, verify that whitelisted paths succeed while unwhitelisted paths return `404` and unsupported verbs return `405`.

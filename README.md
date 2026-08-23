@@ -13,6 +13,7 @@
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--hardened-network-isolation-owasp-asvs-level-3)
+[![Platforms](https://img.shields.io/badge/Platforms-Linux%20%7C%20Windows%20%7C%20macOS-blue.svg)](#features)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blueviolet.svg)](#features)
 
 A lightweight, high-assurance (OWASP ASVS Level 3), zero-dependency developer dashboard and Go telemetry monitor for monitoring service metrics, build diagnostics, and simulating real-time traffic spikes.
