@@ -1,0 +1,59 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches:
+      - develop
+      - test
+      - production
+      - 'feature/**'
+      - 'agent/**'
+      - 'fix/**'
+  pull_request:
+    branches:
+      - develop
+      - test
+      - production
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  javascript-verification:
+    name: JavaScript Tests & Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Verify JavaScript Syntax
+        run: |
+          node --check app.js
+          node --check theme-init.js
+
+      - name: Run Unit Tests
+        run: node --test test_dashboard.js
+
+  golang-verification:
+    name: Go Static Analysis & Build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Go Vet Analysis
+        run: go vet main.go
+
+      - name: Compile Binary
+        run: go build -v main.go
