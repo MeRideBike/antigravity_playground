@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert');
-const { MetricCalculator, safeStorage } = require('./app.js');
+const { MetricCalculator, safeStorage, initTrustedTypes } = require('./app.js');
 
 test('MetricCalculator - baseline values are correct', () => {
   const baseline = MetricCalculator.getBaseline();
@@ -227,6 +227,39 @@ test('MetricCalculator - trimActivityLog enforces FIFO limit of 5 items', () => 
   assert.deepStrictEqual(MetricCalculator.trimActivityLog(null), []);
 });
 
+test('MetricCalculator - validateTheme strictly enforces allowlist against injection payloads', () => {
+  // Valid themes
+  assert.strictEqual(MetricCalculator.validateTheme('dark'), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme('light'), 'light');
+
+  // Injection and malformed payloads
+  assert.strictEqual(MetricCalculator.validateTheme('<script>alert(1)</script>'), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme('"><img src=x onerror=alert(1)>'), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme('__proto__'), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme(''), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme(null), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme(undefined), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme(12345), 'dark');
+  assert.strictEqual(MetricCalculator.validateTheme({}), 'dark');
+});
+
+test('MetricCalculator - robustly handles unexpected / NaN / invalid types in calculation methods', () => {
+  // calculateSpike with faulty randomFn
+  const safeSpike = MetricCalculator.calculateSpike(() => -5);
+  assert.ok(typeof safeSpike.traffic === 'number' && !isNaN(safeSpike.traffic));
+
+  // queueBuild / completeBuild / failBuild with non-number or NaN counts
+  const qRes = MetricCalculator.queueBuild(NaN, 999);
+  assert.strictEqual(qRes.builds, 4); // safely defaults to INITIAL_BUILDS (3) + 1 = 4
+
+  const cRes = MetricCalculator.completeBuild(-5, 999);
+  assert.strictEqual(cRes.builds, 0);
+
+  // simulateMemoryChange with non-numeric / negative parameters
+  const memRes = MetricCalculator.simulateMemoryChange(500, NaN);
+  assert.ok(!isNaN(memRes.memoryMB));
+});
+
 test('safeStorage - gracefully returns fallback if localStorage is undefined or throws', () => {
   const result = safeStorage.get('non_existent_key', 'fallback_value');
   assert.strictEqual(result, 'fallback_value');
@@ -237,3 +270,44 @@ test('safeStorage - set operation does not throw in restricted storage context',
     safeStorage.set('test_key', 'test_val');
   });
 });
+
+test('initTrustedTypes - returns null gracefully when window.trustedTypes is unavailable in headless/node context', () => {
+  const policy = initTrustedTypes();
+  assert.strictEqual(policy, null);
+});
+
+test('initTrustedTypes - creates default policy and strictly forbids dynamic HTML injection', () => {
+  let createdPolicyName = null;
+  let policyRules = null;
+
+  global.window = {
+    trustedTypes: {
+      createPolicy: (name, rules) => {
+        createdPolicyName = name;
+        policyRules = rules;
+        return { name, ...rules };
+      }
+    }
+  };
+
+  try {
+    const policy = initTrustedTypes();
+    assert.strictEqual(createdPolicyName, 'default');
+    assert.ok(policy !== null);
+    assert.strictEqual(typeof policyRules.createHTML, 'function');
+    assert.strictEqual(typeof policyRules.createScript, 'function');
+    assert.strictEqual(typeof policyRules.createScriptURL, 'function');
+
+    // Mathematical DOM XSS refusal: createHTML throws TypeError
+    assert.throws(() => {
+      policyRules.createHTML('<img src=x onerror=alert(1)>');
+    }, TypeError);
+
+    // Pass-through script and URL validation
+    assert.strictEqual(policyRules.createScript('console.log("safe");'), 'console.log("safe");');
+    assert.strictEqual(policyRules.createScriptURL('https://localhost:8080/app.js'), 'https://localhost:8080/app.js');
+  } finally {
+    delete global.window;
+  }
+});
+

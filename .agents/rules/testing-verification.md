@@ -22,7 +22,13 @@ Before concluding any development task or proposing changes, the agent must exec
    node --check theme-init.js
    ```
 
-3. **Go Multi-Linter & Static Analysis Verification**:
+3. **Go Security & Integration Test Suite (`main_test.go`)**:
+   - Run the automated Go backend security tests covering route whitelisting, HTTP method gating, path traversal fuzzing, and security header verification:
+     ```powershell
+     go test -v ./...
+     ```
+
+4. **Go Multi-Linter & Static Analysis Verification**:
    - Every Go change must pass all native static analysis checks with 0 warnings:
      ```powershell
      # 1. Format check
@@ -37,9 +43,13 @@ Before concluding any development task or proposing changes, the agent must exec
      revive ./...
      # 6. Ineffective assignment checks
      ineffassign ./...
+     # 7. Official Go vulnerability database scan
+     govulncheck ./...
+     # 8. Go AST security and taint analysis
+     gosec -exclude-dir=test ./...
      ```
 
-4. **Go Binary Compilation**:
+5. **Go Binary Compilation**:
    - Verify binary compiles cleanly without warnings:
      ```powershell
      go build -v ./...

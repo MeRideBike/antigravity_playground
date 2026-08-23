@@ -14,7 +14,7 @@ This document details the architectural layout, security model, and data flow of
 |       |                                                                 |
 |       +-----------> [style.css]     (Tokens, Dark/Light, WCAG AA, A11y) |
 |       |                                                                 |
-|       +-----------> [app.js]        (MetricCalculator, State, Render)   |
+|       +-----------> [app.js]        (Trusted Types, MetricCalculator)   |
 |                          |                                              |
 |                          v (Polling /health & /api/telemetry every 15s) |
 +--------------------------|----------------------------------------------+
@@ -24,13 +24,18 @@ This document details the architectural layout, security model, and data flow of
 |                            Go HTTP Server                               |
 |                                                                         |
 |  [main.go / server.exe]                                                 |
-|    ├── Whitelisted Static Assets: /, /index.html, /style.css,           |
-|    │                              /app.js, /theme-init.js               |
-|    │   └── Caching: Cache-Control & 304 via http.ServeContent           |
+|    ├── Security Middleware Pipeline:                                    |
+|    │   ├── Path Sanitization & Traversal Mitigation                     |
+|    │   ├── Sec-Fetch Metadata Inspection (Blocks Cross-Site APIs)       |
+|    │   ├── Sliding-Window Token Bucket Rate Limiter (IP Throttling)     |
+|    │   └── Security Headers (CSP Level 3 Trusted Types, nosniff, DENY) |
+|    ├── Virtualized Asset Filesystem (embed.FS / io/fs):                 |
+|    │   └── /, /index.html, /style.css, /app.js, /theme-init.js          |
+|    │       (Zero Host Disk I/O, Immutable In-Memory Storage)            |
 |    ├── Health API: /health -> {"status": "online", "uptime": "..."}     |
 |    ├── Telemetry API: /api/telemetry -> {allocMB, sysMB, numGC, ...}    |
 |    ├── GC API: /api/gc (POST) -> triggers runtime.GC()                  |
-|    └── Protected / Blocked: 404 on main.go, server.exe, tests, docs     |
+|    └── Host Disk Isolation: Source code & host binaries not exposed     |
 +-------------------------------------------------------------------------+
 ```
 
@@ -39,10 +44,11 @@ This document details the architectural layout, security model, and data flow of
 ## 2. Key Modules
 
 ### Frontend (`/`)
-- **`index.html`**: Root document configured with strict Content Security Policy (`script-src 'self'`), a "Skip to main content" bypass link (WCAG 2.4.1), accessible landmark headings (`<h3>`), atomic live regions (`aria-live="polite"`), interactive controls for traffic, build pipelines, and memory diagnostics, and a dedicated Recent Pipeline Activity log section with live search and severity filter controls.
+- **`index.html`**: Root document configured with strict Content Security Policy with Trusted Types (`require-trusted-types-for 'script'; trusted-types default dashboardPolicy;`), a "Skip to main content" bypass link (WCAG 2.4.1), accessible landmark headings (`<h3>`), atomic live regions (`aria-live="polite"`), interactive controls for traffic, build pipelines, and memory diagnostics, and a dedicated Recent Pipeline Activity log section with live search and severity filter controls.
 - **`theme-init.js`**: Synchronous pre-render script to read saved theme from `localStorage` without triggering FOUC, while avoiding inline script CSP violations.
 - **`style.css`**: CSS variables for theming, responsive grid layouts, WCAG 2.2 Level AA calibrated color tokens (>4.5:1 text contrast and >3:1 non-text focus ring contrast in both dark and light modes), minimum target dimensions (≥24×24px / 42px touch height), explicit `:focus-visible` outlines, and `@media (prefers-reduced-motion: reduce)` support.
 - **`app.js`**: Contains:
+  - `initTrustedTypes`: Configures W3C Trusted Types `default` policy that forbids dynamic HTML string sinks at the browser engine level.
   - `MetricCalculator`: Pure mathematical logic for baseline metrics, bounded traffic spike calculation `[350, 850]`, build queue management (bounded 0 to 10), telemetry parsing, byte formatting, diagnostic snapshot generation (`generateDiagnosticSnapshot`), Markdown report formatting (`formatMarkdownReport`), multi-criteria event filtering (`filterActivityLog`), and activity log FIFO formatting.
   - `safeStorage`: Exception-safe wrapper around `localStorage`.
   - `checkServerHealth`: Dynamic health & telemetry polling that synchronizes real-time Go process memory and toggles between `Server: Online`, `Server: Offline`, and `Local File Mode`.
@@ -50,14 +56,29 @@ This document details the architectural layout, security model, and data flow of
   - `renderActivityList`: Accessible, injection-safe DOM builder for pipeline events with dynamic result count updates and standard `<time datetime="...">` metadata.
 
 ### Backend (`main.go` / `server.exe`)
-- Standard-library Go server with strict route whitelisting.
-- Authorized endpoints for `/health`, `/api/telemetry`, and `/api/gc`.
+- **Virtualized Filesystem (`embed.FS`)**: Static web assets (`index.html`, `style.css`, `app.js`, `theme-init.js`) are compiled directly into the binary, completely eliminating runtime disk access, symlink traversal, and LFI.
+- **Sec-Fetch Metadata Validation**: Protocol-level defense blocking cross-site API probing and unauthorized mutations with `403 Forbidden`.
+- **In-Memory Sliding-Window Rate Limiter**: Thread-safe IP rate limiting (100 req/min) mitigating DoS, thread exhaustion, and Slowloris attacks.
+- Standard-library Go server with loopback network isolation (`127.0.0.1` default, configurable via `-host` or `HOST`).
+- Unified security headers middleware enforcing strict CSP Level 3 (`require-trusted-types-for 'script'`, `trusted-types default dashboardPolicy`, `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, and Cross-Origin Isolation headers (COOP/CORP).
+- Path traversal rejection middleware blocking encoded and unencoded directory traversal payloads (`..`, `%2e%2e`, `%00`).
+- DoS & Slowloris hardening via `ReadHeaderTimeout: 3s`, `ReadTimeout: 5s`, `WriteTimeout: 10s`, `IdleTimeout: 120s`, and `MaxHeaderBytes: 1MB`.
+- Authorized endpoints for `/health`, `/api/telemetry`, and `POST /api/gc`.
 - Automatic caching headers with `304 Not Modified` conditional validation via `http.ServeContent`.
-- Configurable listening port via `-port` flag and `PORT` environment variable.
 
-### Test Suite (`test_dashboard.js`)
-- Automated tests running directly with `node --test`.
-- Covers baseline state validation, boundary assertions, fuzz testing (100 iterations), build pipeline state transitions, formatBytes conversions, telemetry JSON parsing, memory simulation, diagnostic snapshot schema validation, markdown report generation, severity and text search log filtering, FIFO trimming (5 items max), and storage fallback behavior.
+### Test Suites
+- **Frontend & Calculator Tests (`test_dashboard.js`)**:
+  - Automated tests running directly with `node --test`.
+  - Covers baseline state validation, boundary assertions, fuzz testing (100 iterations), build pipeline state transitions, formatBytes conversions, telemetry JSON parsing, memory simulation, diagnostic snapshot schema validation, markdown report generation, severity and text search log filtering, theme allowlist sanitization against DOM injection, FIFO trimming (5 items max), storage fallback behavior, and W3C Trusted Types policy validation.
+- **Backend Security & Routing Tests (`main_test.go`)**:
+  - Automated tests running with `go test ./...`.
+  - Asserts 200 OK on virtual embedded assets and API routes.
+  - Asserts 404 Not Found on unlisted paths and source code files.
+  - Asserts 405 Method Not Allowed on disallowed HTTP verbs (`POST`, `PUT`, `DELETE`, `PATCH`).
+  - Asserts 403 Forbidden on cross-site `Sec-Fetch` requests.
+  - Asserts 429 Too Many Requests on rate limiter threshold exhaustion.
+  - Fuzzes path traversal payloads (`/..%2f`, `/%2e%2e/`, `//`, `%00`).
+  - Validates delivery of all security headers, Trusted Types directives, and JSON telemetry contracts.
 
 ---
 
@@ -65,9 +86,13 @@ This document details the architectural layout, security model, and data flow of
 
 - **Automated Continuous Integration (`.github/workflows/ci.yml`)**:
   - Runs on all pushes and pull requests across `develop`, `test`, `production`, and feature branches.
-  - Verifies JavaScript syntax (`node --check`), executes unit tests with native coverage (`node --test --experimental-test-coverage`), runs Go static analysis (`go vet`), and verifies binary builds (`go build`).
+  - Verifies JavaScript syntax (`node --check`), executes unit tests with native coverage (`node --test --experimental-test-coverage`), runs Go static analysis (`go vet`, `staticcheck`, `revive`, `errcheck`, `ineffassign`), executes Go security tests (`go test -v ./...`), runs vulnerability checks (`govulncheck`, `gosec`), and verifies binary builds (`go build`).
 - **Static Application Security Testing (`.github/workflows/codeql.yml`)**:
   - Automatically executes GitHub CodeQL SAST scanning for Go and JavaScript to detect security vulnerabilities and injection risks.
+- **Secret Leak Detection (`.github/workflows/security-scan.yml`)**:
+  - Scans repository commits and pull requests with `gitleaks` to enforce NIST SP 800-218 credential leak prevention.
+- **Supply Chain Integrity & SBOM Generation (`.github/workflows/slsa-sbom.yml`)**:
+  - Generates SPDX Software Bill of Materials (SBOM) and build provenance for releases adhering to SLSA Level 3 standards.
 - **Automated Google Lighthouse CI (`.github/workflows/lighthouse.yml`)**:
   - Executes automated web audits to enforce 100% scores across Performance, Accessibility, Best Practices, and SEO based on `.lighthouserc.json`.
 - **Automated PR & Commit Linter (`.github/workflows/commitlint.yml`)**:
@@ -83,4 +108,6 @@ Key architectural choices and trade-offs are formally tracked in [`docs/adr/`](a
 - [**ADR 0001**](adr/0001-zero-runtime-framework-dependencies.md): Zero Runtime Framework Dependencies
 - [**ADR 0002**](adr/0002-early-theme-bootstrap-strategy.md): Early Theme Bootstrap Strategy to Prevent FOUC
 - [**ADR 0003**](adr/0003-whitelisted-go-routing-and-csp.md): Hardened Whitelisted Go HTTP Routing & Strict CSP
+- [**ADR 0004**](adr/0004-owasp-asvs-level-3-and-advanced-standards.md): OWASP ASVS Level 3, embed.FS Virtualization, Trusted Types & Advanced Security Standards
+
 

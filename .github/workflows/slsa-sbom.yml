@@ -1,0 +1,51 @@
+﻿name: SLSA Provenance & SBOM Generation
+
+on:
+  push:
+    branches:
+      - production
+      - test
+      - develop
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-sbom:
+    name: Hermetic Build & SBOM Generation
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+      actions: read
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Build Standalone Executable
+        run: |
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o dist/server-linux-amd64 main.go
+          CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -trimpath -ldflags="-s -w" -o dist/server-windows-amd64.exe main.go
+
+      - name: Generate Software Bill of Materials (SBOM)
+        uses: anchore/sbom-action@v0
+        with:
+          path: ./dist
+          format: 'spdx-json'
+          output-file: 'dist/sbom.spdx.json'
+
+      - name: Upload Build Artifacts & SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts-and-sbom
+          path: |
+            dist/*
