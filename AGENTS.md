@@ -38,6 +38,7 @@ All agent interactions must respect the modular rules in [`.agents/rules/`](file
 ## 4. Key Workflows
 
 - [`.agents/workflows/documentation-maintenance.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/workflows/documentation-maintenance.md): Systematic procedure for auditing and updating project documentation after code refactoring or feature additions.
+- [`.agents/workflows/adr-creation.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/workflows/adr-creation.md): Step-by-step workflow for drafting, indexing, and maintaining Architecture Decision Records in `docs/adr/`.
 
 ---
 

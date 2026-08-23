@@ -58,3 +58,25 @@ This document details the architectural layout, security model, and data flow of
 ### Test Suite (`test_dashboard.js`)
 - Automated tests running directly with `node --test`.
 - Covers baseline state validation, boundary assertions, fuzz testing (100 iterations), build pipeline state transitions, formatBytes conversions, telemetry JSON parsing, memory simulation, diagnostic snapshot schema validation, markdown report generation, severity and text search log filtering, FIFO trimming (5 items max), and storage fallback behavior.
+
+---
+
+## 3. CI/CD & Security Automation
+
+- **Automated Continuous Integration (`.github/workflows/ci.yml`)**:
+  - Runs on all pushes and pull requests across `develop`, `test`, `production`, and feature branches.
+  - Verifies JavaScript syntax (`node --check`), executes unit tests (`node --test`), runs Go static analysis (`go vet`), and verifies binary builds (`go build`).
+- **Static Application Security Testing (`.github/workflows/codeql.yml`)**:
+  - Automatically executes GitHub CodeQL SAST scanning for Go and JavaScript to detect security vulnerabilities and injection risks.
+- **Continuous Deployment**:
+  - Automated deployment of the `production` branch to GitHub Pages CDN at `https://meridebike.github.io/antigravity_playground/`.
+
+---
+
+## 4. Architecture Decision Records (ADRs)
+
+Key architectural choices and trade-offs are formally tracked in [`docs/adr/`](adr/README.md):
+- [**ADR 0001**](adr/0001-zero-runtime-framework-dependencies.md): Zero Runtime Framework Dependencies
+- [**ADR 0002**](adr/0002-early-theme-bootstrap-strategy.md): Early Theme Bootstrap Strategy to Prevent FOUC
+- [**ADR 0003**](adr/0003-whitelisted-go-routing-and-csp.md): Hardened Whitelisted Go HTTP Routing & Strict CSP
+

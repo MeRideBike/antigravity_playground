@@ -1,6 +1,7 @@
 # E.'s Dev Dashboard
 
 [![CI Pipeline](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml)
+[![CodeQL Security](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml)
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--accessibility-wcag-22-level-aa)
@@ -8,7 +9,7 @@
 
 A lightweight, secure, zero-dependency developer dashboard and Go telemetry monitor for monitoring service metrics, build diagnostics, and simulating real-time traffic spikes.
 
-[🚀 **Live Demo**](https://meridebike.github.io/antigravity_playground/) • [📖 **Architecture Docs**](docs/architecture.md) • [🤖 **Agent Governance**](AGENTS.md) • [⚖️ **License (MIT)**](LICENSE)
+[🚀 **Live Demo**](https://meridebike.github.io/antigravity_playground/) • [📖 **Architecture Docs**](docs/architecture.md) • [🏛️ **ADRs**](docs/adr/README.md) • [🛡️ **Security Policy**](SECURITY.md) • [🤝 **Contributing**](CONTRIBUTING.md) • [⚖️ **License**](LICENSE)
 
 ---
 
@@ -49,25 +50,32 @@ A lightweight, secure, zero-dependency developer dashboard and Go telemetry moni
 ```text
 antigravity_playground/
 ├── .github/
-│   └── workflows/
-│       └── ci.yml      # Automated GitHub Actions CI test suite
-├── .agents/            # Agent development rules and workflows
-│   ├── rules/          # Active governance policies (architecture, security, testing, git)
-│   └── workflows/      # Operational runbooks (documentation-maintenance)
-├── docs/               # System documentation & technical architecture
-│   └── architecture.md # Detailed architecture, component diagram, and data flow
-├── index.html          # Main dashboard HTML structure with CSP and ARIA attributes
-├── style.css           # Responsive styles, CSS variables, dark/light themes, animations
-├── app.js              # Application logic (metrics, build pipeline, activity log, DOM rendering)
-├── theme-init.js       # Fast theme bootstrap script loaded in <head>
-├── test_dashboard.js   # Unit test suite for calculation logic, pipeline states & storage
-├── main.go             # Hardened Go HTTP server with route whitelisting & telemetry API
-├── LICENSE             # MIT Open Source License
-├── AGENTS.md           # Agent governance index & policy hierarchy
-├── README.md           # Project documentation & badges
+│   ├── workflows/
+│   │   ├── ci.yml              # Automated Node.js & Go CI test suite
+│   │   └── codeql.yml          # Automated CodeQL SAST security scanning
+│   ├── ISSUE_TEMPLATE/         # Structured GitHub Issue forms (bugs & features)
+│   ├── PULL_REQUEST_TEMPLATE.md# Enterprise PR review checklist
+│   └── dependabot.yml          # Automated supply-chain dependency maintenance
+├── .agents/                    # Agent development rules and workflows
+│   ├── rules/                  # Active governance policies (architecture, security, testing, git)
+│   └── workflows/              # Operational runbooks (documentation-maintenance)
+├── docs/                       # System documentation & technical architecture
+│   ├── architecture.md         # Detailed architecture, component diagram, and data flow
+│   └── adr/                    # Architecture Decision Records (ADRs 0001-0003)
+├── index.html                  # Main dashboard HTML structure with CSP and ARIA attributes
+├── style.css                   # Responsive styles, CSS variables, dark/light themes, animations
+├── app.js                      # Application logic (metrics, build pipeline, activity log, DOM rendering)
+├── theme-init.js               # Fast theme bootstrap script loaded in <head>
+├── test_dashboard.js           # Unit test suite for calculation logic, pipeline states & storage
+├── main.go                     # Hardened Go HTTP server with route whitelisting & telemetry API
+├── CONTRIBUTING.md             # Contribution guidelines & branching standards
+├── SECURITY.md                 # Security architecture & vulnerability policy
+├── LICENSE                     # MIT Open Source License
+├── AGENTS.md                   # Agent governance index & policy hierarchy
+├── README.md                   # Project documentation & badges
 └── .vscode/
-    ├── launch.json     # VS Code debug profiles for Chrome
-    └── tasks.json      # VS Code tasks for building and starting the server
+    ├── launch.json             # VS Code debug profiles for Chrome
+    └── tasks.json              # VS Code tasks for building and starting the server
 ```
 
 ---
