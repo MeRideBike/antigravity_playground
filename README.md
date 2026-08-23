@@ -15,6 +15,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--hardened-network-isolation-owasp-asvs-level-3)
 [![Platforms](https://img.shields.io/badge/Platforms-Linux%20%7C%20Windows%20%7C%20macOS-blue.svg)](#features)
+[![Release](https://img.shields.io/badge/Release-v1.0.0%20(Multi--Platform)-blue.svg)](https://github.com/MeRideBike/antigravity_playground/releases)
 [![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blueviolet.svg)](#features)
 
 A lightweight, high-assurance (OWASP ASVS Level 3), zero-dependency developer dashboard and Go telemetry monitor for monitoring service metrics, build diagnostics, and simulating real-time traffic spikes.
@@ -70,6 +71,7 @@ antigravity_playground/
 │   │   ├── security-scan.yml   # Automated Gitleaks secret scanning (NIST SP 800-218)
 │   │   ├── slsa-sbom.yml       # Automated SLSA Level 3 SBOM & provenance generator
 │   │   ├── scorecard.yml       # Automated OpenSSF Scorecard supply-chain security audit
+│   │   ├── release.yml         # Automated multi-platform binary compilation & checksum release
 │   │   ├── commitlint.yml      # Automated PR & Conventional Commits linter
 │   │   └── lighthouse.yml      # Automated Google Lighthouse CI performance audit
 │   ├── ISSUE_TEMPLATE/         # Structured GitHub Issue forms (bugs & features)
@@ -79,7 +81,7 @@ antigravity_playground/
 ├── .golangci.yml               # golangci-lint multi-linter static analysis rules
 ├── .agents/                    # Agent development rules and workflows
 │   ├── rules/                  # Active governance policies (architecture, security, testing, git)
-│   └── workflows/              # Operational runbooks (documentation-maintenance, adr-creation)
+│   └── workflows/              # Operational runbooks (documentation-maintenance, adr-creation, release-distribution)
 ├── docs/                       # System documentation & technical architecture
 │   ├── architecture.md         # Detailed architecture, component diagram, and data flow
 │   └── adr/                    # Architecture Decision Records (ADRs 0001-0004)

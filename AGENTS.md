@@ -39,6 +39,7 @@ All agent interactions must respect the modular rules in [`.agents/rules/`](file
 
 - [`.agents/workflows/documentation-maintenance.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/workflows/documentation-maintenance.md): Systematic procedure for auditing and updating project documentation after code refactoring or feature additions.
 - [`.agents/workflows/adr-creation.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/workflows/adr-creation.md): Step-by-step workflow for drafting, indexing, and maintaining Architecture Decision Records in `docs/adr/`.
+- [`.agents/workflows/release-distribution.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/workflows/release-distribution.md): Runbook for tagging, compiling hermetic cross-platform binaries, and publishing cryptographic SHA-256 checksums.
 
 ---
 
