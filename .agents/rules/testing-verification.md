@@ -103,3 +103,7 @@ When implementing features or bug fixes, developer agents MUST author unit tests
 - **Path Normalization**: Assert that URL and virtual filesystem routing behaves identically across Windows backslashes (`\`) and POSIX forward slashes (`/`) using `path.Clean` and `filepath.ToSlash`.
 - **Cross-Platform Compilation Invariants**: Ensure zero platform-specific syscalls without conditional build tags. All network handlers and embedded assets must compile and serve cleanly across Linux, Windows, and macOS.
 - **HTTP Routing Invariants**: In Go handlers, verify that whitelisted paths succeed while unwhitelisted paths return `404` and unsupported verbs return `405`.
+
+### F. Pure Performance, Concurrency & Zero-Allocation Units
+- **Rate Limiter Concurrency & Allocations**: Assert `0 allocs/op` on token bucket consumption under parallel goroutines (`b.RunParallel`).
+- **Sub-Microsecond Virtual FS Routing**: Micro-benchmarks for asset dispatching must maintain sub-10 microsecond latency per request without memory leakage.

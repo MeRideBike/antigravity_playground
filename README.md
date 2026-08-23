@@ -8,6 +8,7 @@
 [![SLSA Level 3](https://img.shields.io/badge/SLSA-Level%203-blue.svg)](#verification--testing)
 [![golangci-lint](https://img.shields.io/badge/golangci--lint-passing-brightgreen.svg)](#verification--testing)
 [![Coverage](https://img.shields.io/badge/coverage-100%25%20core%20logic-brightgreen.svg)](#verification--testing)
+[![Benchmarks](https://img.shields.io/badge/Benchmarks-Passing%20(0%20allocs%2Fop)-brightgreen.svg)](#verification--testing)
 [![Lighthouse Score](https://img.shields.io/badge/Lighthouse-100%2F100-brightgreen.svg)](#features)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)

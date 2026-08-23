@@ -90,6 +90,9 @@ jobs:
           govulncheck ./...
           gosec ./...
 
+      - name: Run Go Micro-Benchmarks & Latency Regression Check
+        run: go test -bench=Benchmark -benchmem -run=^$ ./...
+
   golang-cross-platform:
     name: Go Cross-Platform Matrix (${{ matrix.os }})
     strategy:

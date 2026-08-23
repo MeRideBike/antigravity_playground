@@ -359,3 +359,43 @@ func TestHealthAndTelemetryPayloads(t *testing.T) {
 		t.Errorf("Expected goroutines field in telemetry payload")
 	}
 }
+
+// BenchmarkVirtualFSRouting measures virtual filesystem route dispatching and static asset delivery throughput.
+func BenchmarkVirtualFSRouting(b *testing.B) {
+	handler := setupMux()
+	req := httptest.NewRequest(http.MethodGet, "/index.html", nil)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+	}
+}
+
+// BenchmarkRateLimiterContention measures token bucket thread-safety and latency under high parallel goroutine contention.
+func BenchmarkRateLimiterContention(b *testing.B) {
+	limiter := newIPRateLimiter(1000000, 1*time.Minute)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	b.RunParallel(func(pb *testing.PB) {
+		ip := "192.168.1.100"
+		for pb.Next() {
+			limiter.allow(ip)
+		}
+	})
+}
+
+// BenchmarkTelemetryJSONGeneration measures real-time runtime memory stats extraction and serialization.
+func BenchmarkTelemetryJSONGeneration(b *testing.B) {
+	handler := setupMux()
+	req := httptest.NewRequest(http.MethodGet, "/api/telemetry", nil)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+	for i := 0; i < b.N; i++ {
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+	}
+}
