@@ -109,8 +109,8 @@
             <p class="controls-desc">Trigger traffic spikes, manage build pipelines, or run memory diagnostics with real-time telemetry.</p>
           </div>
           
-          <fieldset class="controls-group">
-            <legend class="controls-group-label">API Traffic:</legend>
+          <div class="controls-group" role="group" aria-labelledby="lbl-group-traffic">
+            <span id="lbl-group-traffic" class="controls-group-label">API Traffic:</span>
             <div class="controls-actions">
               <button id="btn-traffic-spike" class="btn btn-primary" type="button" aria-controls="card-traffic">
                 <span class="btn-icon" aria-hidden="true">⚡</span>
@@ -120,10 +120,10 @@
                 Reset Traffic
               </button>
             </div>
-          </fieldset>
+          </div>
 
-          <fieldset class="controls-group">
-            <legend class="controls-group-label">Build Pipeline:</legend>
+          <div class="controls-group" role="group" aria-labelledby="lbl-group-build">
+            <span id="lbl-group-build" class="controls-group-label">Build Pipeline:</span>
             <div class="controls-actions">
               <button id="btn-queue-build" class="btn btn-primary" type="button" aria-controls="card-builds activity-list">
                 <span class="btn-icon" aria-hidden="true">⚙️</span>
@@ -138,10 +138,10 @@
                 Simulate Failure
               </button>
             </div>
-          </fieldset>
+          </div>
 
-          <fieldset class="controls-group">
-            <legend class="controls-group-label">Memory Diagnostics:</legend>
+          <div class="controls-group" role="group" aria-labelledby="lbl-group-memory">
+            <span id="lbl-group-memory" class="controls-group-label">Memory Diagnostics:</span>
             <div class="controls-actions">
               <button id="btn-trigger-gc" class="btn btn-primary" type="button" aria-controls="card-memory activity-list">
                 <span class="btn-icon" aria-hidden="true">🧹</span>
@@ -152,10 +152,10 @@
                 Simulate Allocation
               </button>
             </div>
-          </fieldset>
+          </div>
 
-          <fieldset class="controls-group">
-            <legend class="controls-group-label">Diagnostics &amp; Reports:</legend>
+          <div class="controls-group" role="group" aria-labelledby="lbl-group-diagnostics">
+            <span id="lbl-group-diagnostics" class="controls-group-label">Diagnostics &amp; Reports:</span>
             <div class="controls-actions">
               <button id="btn-export-json" class="btn btn-secondary" type="button" aria-controls="update-status">
                 <span class="btn-icon" aria-hidden="true">📥</span>
@@ -170,7 +170,7 @@
                 Clear Activity Log
               </button>
             </div>
-          </fieldset>
+          </div>
 
           <div class="update-status" id="update-status" aria-live="polite" aria-atomic="true">
             Last updated: <span id="last-updated-time">Just now</span>
