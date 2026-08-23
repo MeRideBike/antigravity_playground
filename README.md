@@ -4,6 +4,7 @@
 [![CodeQL Security](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/MeRideBike/antigravity_playground)](https://goreportcard.com/report/github.com/MeRideBike/antigravity_playground)
 [![Coverage](https://img.shields.io/badge/coverage-100%25%20core%20logic-brightgreen.svg)](#verification--testing)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--accessibility-wcag-22-level-aa)
@@ -54,7 +55,8 @@ antigravity_playground/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml              # Automated Node.js & Go CI test suite
-│   │   └── codeql.yml          # Automated CodeQL SAST security scanning
+│   │   ├── codeql.yml          # Automated CodeQL SAST security scanning
+│   │   └── commitlint.yml      # Automated PR & Conventional Commits linter
 │   ├── ISSUE_TEMPLATE/         # Structured GitHub Issue forms (bugs & features)
 │   ├── PULL_REQUEST_TEMPLATE.md# Enterprise PR review checklist
 │   └── dependabot.yml          # Automated supply-chain dependency maintenance
