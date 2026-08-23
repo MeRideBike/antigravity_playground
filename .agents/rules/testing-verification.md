@@ -98,4 +98,17 @@ When implementing features or bug fixes, developer agents MUST author unit tests
 ### D. Defensive Wrappers & Failure Modes
 - **Storage Failures**: Explicitly test `safeStorage` behavior under simulated `SecurityError`, missing `window.localStorage`, or `QuotaExceededError`.
 - **Telemetry Fallbacks**: Validate `parseTelemetry` handling of malformed payloads, non-numeric values, or missing fields without throwing unhandled exceptions.
+
+### E. Multi-Platform & Systems Portability Units
+- **Path Normalization**: Assert that URL and virtual filesystem routing behaves identically across Windows backslashes (`\`) and POSIX forward slashes (`/`) using `path.Clean` and `filepath.ToSlash`.
+- **Cross-Platform Compilation Invariants**: Ensure zero platform-specific syscalls without conditional build tags. All network handlers and embedded assets must compile and serve cleanly across Linux, Windows, and macOS.
 - **HTTP Routing Invariants**: In Go handlers, verify that whitelisted paths succeed while unwhitelisted paths return `404` and unsupported verbs return `405`.
+
+### F. Pure Performance, Concurrency & Zero-Allocation Units
+- **Rate Limiter Concurrency & Allocations**: Assert `0 allocs/op` on token bucket consumption under parallel goroutines (`b.RunParallel`).
+- **Sub-Microsecond Virtual FS Routing**: Micro-benchmarks for asset dispatching must maintain sub-10 microsecond latency per request without memory leakage.
+
+### G. End-to-End (E2E) Full-Stack Integration Units (`test_e2e.js`)
+- **Server Process Orchestration**: Spawn the native Go server on an ephemeral/test port, assert listening readiness, execute real HTTP requests, and ensure clean SIGTERM/process kill cleanup.
+- **Protocol & Security Header Verification**: Assert live HTTP response status codes, `Content-Type`, hardened `Content-Security-Policy` with Trusted Types, `Sec-Fetch` defenses, and Cross-Origin isolation headers.
+- **DOM & Client Mutation Lifecycles**: Assert the end-to-end flow of telemetry data flowing from server payload into `MetricCalculator`, DOM state representation, markdown report generation, and local storage state persistence.

@@ -34,10 +34,17 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Setup Go (For E2E Server Orchestration)
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
       - name: Verify JavaScript Syntax
         run: |
           node --check app.js
           node --check theme-init.js
+          node --check test_dashboard.js
+          node --check test_e2e.js
 
       - name: Run Unit Tests & Collect Coverage
         run: |
@@ -49,8 +56,11 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           node --test test_dashboard.js
 
-  golang-verification:
-    name: Go Static Analysis & Multi-Linter
+      - name: Run E2E Integration & DOM Lifecycle Tests
+        run: node --test test_e2e.js
+
+  golang-lint-and-sast:
+    name: Go Static Analysis & SAST (Linux)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -83,9 +93,6 @@ jobs:
           errcheck ./...
           ineffassign ./...
 
-      - name: Run Go Unit & Integration Tests
-        run: go test -v ./...
-
       - name: Go Vulnerability & Security SAST Scan (govulncheck & gosec)
         run: |
           go install golang.org/x/vuln/cmd/govulncheck@latest
@@ -93,5 +100,27 @@ jobs:
           govulncheck ./...
           gosec ./...
 
-      - name: Compile Binary
+      - name: Run Go Micro-Benchmarks & Latency Regression Check
+        run: go test -bench=Benchmark -benchmem -run=^$ ./...
+
+  golang-cross-platform:
+    name: Go Cross-Platform Matrix (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Run Go Unit, Fuzz & Security Tests
+        run: go test -v ./...
+
+      - name: Compile Cross-Platform Binary
         run: go build -v ./...
