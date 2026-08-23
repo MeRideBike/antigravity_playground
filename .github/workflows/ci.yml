@@ -48,7 +48,7 @@ jobs:
           node --test test_dashboard.js
 
   golang-verification:
-    name: Go Static Analysis & Build
+    name: Go Static Analysis & Multi-Linter
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
@@ -67,14 +67,19 @@ jobs:
             exit 1
           fi
 
-      - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v6
-        with:
-          version: latest
-          args: --timeout=5m
-
       - name: Go Vet Analysis
         run: go vet ./...
+
+      - name: Multi-Linter Analysis (staticcheck, revive, errcheck, ineffassign)
+        run: |
+          go install honnef.co/go/tools/cmd/staticcheck@latest
+          go install github.com/mgechev/revive@latest
+          go install github.com/kisielk/errcheck@latest
+          go install github.com/gordonklaus/ineffassign@latest
+          staticcheck ./...
+          revive ./...
+          errcheck ./...
+          ineffassign ./...
 
       - name: Compile Binary
         run: go build -v ./...

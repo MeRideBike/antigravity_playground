@@ -1,3 +1,4 @@
+// Package main provides a lightweight, secure HTTP server and telemetry monitor for E.'s Dev Dashboard.
 package main
 
 import (
@@ -114,7 +115,7 @@ func secureFileHandler(w http.ResponseWriter, r *http.Request) {
 		http.NotFound(w, r)
 		return
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	stat, err := file.Stat()
 	if err != nil || stat.IsDir() {
