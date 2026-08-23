@@ -37,3 +37,37 @@ All agent interactions must respect the modular rules in [`.agents/rules/`](file
 ## 4. Key Workflows
 
 - [`.agents/workflows/documentation-maintenance.md`](file:///c:/Users/ethan/OneDrive/Desktop/antigravity_playground/.agents/workflows/documentation-maintenance.md): Systematic procedure for auditing and updating project documentation after code refactoring or feature additions.
+
+---
+
+## 5. Git Branching & Promotion Workflow
+
+The repository follows a structured **Dev → Test → Release** lifecycle:
+
+```mermaid
+gitGraph
+   commit id: "Initial"
+   branch develop
+   checkout develop
+   branch feature/new-widget
+   checkout feature/new-widget
+   commit id: "Feature Work"
+   checkout develop
+   merge feature/new-widget id: "Merge to Dev"
+   checkout test
+   merge develop id: "Promote to Test"
+   checkout main
+   merge test id: "Release to Main" tag: "v1.0"
+```
+
+1. **Feature & Agent Branches (`feature/*`, `agent/*`, `fix/*`)**:
+   - Created off `develop`.
+   - Used for individual tasks, whether coded manually by the user or autonomously by subagents.
+2. **Development Baseline (`develop`)**:
+   - Active aggregation branch for ongoing development.
+   - All unit tests (`node --test`) and Go verification must pass before merging.
+3. **Testing / Staging (`test`)**:
+   - Pre-release validation branch.
+   - Used for staging end-to-end integration and manual verification.
+4. **Release (`main`)**:
+   - Protected, production-ready release branch. Only promoted from verified `test` builds.
