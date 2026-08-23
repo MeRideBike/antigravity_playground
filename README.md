@@ -1,6 +1,14 @@
 # E.'s Dev Dashboard
 
-A lightweight, secure, zero-dependency local developer dashboard for monitoring service metrics, build diagnostics, and simulating real-time traffic spikes.
+[![CI Pipeline](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml)
+[![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--accessibility-wcag-22-level-aa)
+[![Zero Dependencies](https://img.shields.io/badge/dependencies-0-blueviolet.svg)](#features)
+
+A lightweight, secure, zero-dependency developer dashboard and Go telemetry monitor for monitoring service metrics, build diagnostics, and simulating real-time traffic spikes.
+
+[🚀 **Live Demo**](https://meridebike.github.io/antigravity_playground/) • [📖 **Architecture Docs**](docs/architecture.md) • [🤖 **Agent Governance**](AGENTS.md) • [⚖️ **License (MIT)**](LICENSE)
 
 ---
 
@@ -40,20 +48,23 @@ A lightweight, secure, zero-dependency local developer dashboard for monitoring 
 
 ```text
 antigravity_playground/
-├── AGENTS.md           # Agent governance index & policy hierarchy
+├── .github/
+│   └── workflows/
+│       └── ci.yml      # Automated GitHub Actions CI test suite
+├── .agents/            # Agent development rules and workflows
+│   ├── rules/          # Active governance policies (architecture, security, testing, git)
+│   └── workflows/      # Operational runbooks (documentation-maintenance)
+├── docs/               # System documentation & technical architecture
+│   └── architecture.md # Detailed architecture, component diagram, and data flow
 ├── index.html          # Main dashboard HTML structure with CSP and ARIA attributes
 ├── style.css           # Responsive styles, CSS variables, dark/light themes, animations
 ├── app.js              # Application logic (metrics, build pipeline, activity log, DOM rendering)
 ├── theme-init.js       # Fast theme bootstrap script loaded in <head>
 ├── test_dashboard.js   # Unit test suite for calculation logic, pipeline states & storage
-├── main.go             # Hardened Go HTTP server with route whitelisting & /health API
-├── server.exe          # Pre-compiled Windows binary of the Go server
-├── README.md           # Project documentation
-├── .agents/            # Agent development rules and workflows
-│   ├── rules/          # Active governance policies (architecture, security, testing, docs)
-│   └── workflows/      # Operational runbooks (documentation-maintenance)
-├── docs/               # System documentation & technical architecture
-│   └── architecture.md # Detailed architecture, component diagram, and data flow
+├── main.go             # Hardened Go HTTP server with route whitelisting & telemetry API
+├── LICENSE             # MIT Open Source License
+├── AGENTS.md           # Agent governance index & policy hierarchy
+├── README.md           # Project documentation & badges
 └── .vscode/
     ├── launch.json     # VS Code debug profiles for Chrome
     └── tasks.json      # VS Code tasks for building and starting the server
@@ -156,3 +167,10 @@ curl.exe -s -X POST http://localhost:8080/api/gc
 curl.exe -I http://localhost:8080/main.go
 curl.exe -I http://localhost:8080/server.exe
 ```
+
+---
+
+## License
+
+This project is licensed under the [MIT License](LICENSE) - see the [LICENSE](LICENSE) file for details.
+
