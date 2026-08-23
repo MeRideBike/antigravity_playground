@@ -19,6 +19,15 @@
         <p class="subtitle">Real-time local service metrics and build diagnostics</p>
       </div>
       <div class="header-actions">
+        <button id="btn-open-palette" class="btn-command-palette" type="button" aria-label="Open Command Palette (Ctrl+K)" title="Quick Command Palette (Ctrl+K)">
+          <span class="palette-btn-icon" aria-hidden="true">🔍</span>
+          <span class="palette-btn-text">Commands</span>
+          <kbd class="kbd-badge">Ctrl K</kbd>
+        </button>
+        <div class="density-toggle-group" role="group" aria-label="View density toggle">
+          <button id="btn-density-comfortable" class="btn-density active" type="button" aria-pressed="true" title="Comfortable layout density" aria-label="Comfortable layout density">Comfortable</button>
+          <button id="btn-density-compact" class="btn-density" type="button" aria-pressed="false" title="Compact layout density" aria-label="Compact layout density">Compact</button>
+        </div>
         <div class="status-indicator" id="status-indicator" role="status">
           <span class="status-dot" id="status-dot" aria-hidden="true"></span>
           <span class="status-text" id="status-text">Detecting...</span>
@@ -31,7 +40,7 @@
     </header>
 
     <main id="main-content" tabindex="-1">
-      <section class="metrics-grid" aria-label="Key developer metrics">
+      <section class="metrics-grid" id="section-metrics" aria-label="Key developer metrics" draggable="true">
         <article class="metric-card metric-card-builds" id="card-builds">
           <div class="card-header">
             <h2 class="metric-label">Active Build Jobs</h2>
@@ -41,8 +50,14 @@
             <span class="metric-value" id="val-builds">3</span>
             <span class="metric-unit">tasks</span>
           </div>
+          <div class="metric-sparkline-wrapper">
+            <svg class="metric-sparkline" id="sparkline-builds" viewBox="0 0 120 32" preserveAspectRatio="none" aria-label="Active build jobs rolling trend" role="img">
+              <path class="sparkline-area" id="sparkline-area-builds" d=""></path>
+              <path class="sparkline-line" id="sparkline-line-builds" d=""></path>
+            </svg>
+          </div>
           <div class="metric-footer">
-            <span class="tag tag-info">E.'s Pipeline &bull; Go &amp; JS</span>
+            <span class="tag tag-info" id="builds-tag">E.'s Pipeline &bull; Go &amp; JS</span>
           </div>
         </article>
 
@@ -54,6 +69,12 @@
           <div class="metric-value-wrapper">
             <span class="metric-value" id="val-traffic">142</span>
             <span class="metric-unit">req/s</span>
+          </div>
+          <div class="metric-sparkline-wrapper">
+            <svg class="metric-sparkline" id="sparkline-traffic" viewBox="0 0 120 32" preserveAspectRatio="none" aria-label="API requests per second rolling trend" role="img">
+              <path class="sparkline-area" id="sparkline-area-traffic" d=""></path>
+              <path class="sparkline-line" id="sparkline-line-traffic" d=""></path>
+            </svg>
           </div>
           <div class="metric-footer">
             <span class="tag tag-success" id="traffic-tag">+12% vs avg</span>
@@ -69,13 +90,19 @@
             <span class="metric-value" id="val-memory">318</span>
             <span class="metric-unit" id="memory-unit">MB</span>
           </div>
+          <div class="metric-sparkline-wrapper">
+            <svg class="metric-sparkline" id="sparkline-memory" viewBox="0 0 120 32" preserveAspectRatio="none" aria-label="Memory heap usage rolling trend" role="img">
+              <path class="sparkline-area" id="sparkline-area-memory" d=""></path>
+              <path class="sparkline-line" id="sparkline-line-memory" d=""></path>
+            </svg>
+          </div>
           <div class="metric-footer">
             <span class="tag tag-purple" id="memory-tag">Limit: 1024 MB</span>
           </div>
         </article>
       </section>
 
-      <section class="controls-section">
+      <section class="controls-section" id="section-controls" aria-label="Metric and Pipeline Controls" draggable="true">
         <div class="controls-card">
           <div class="controls-info">
             <h2 class="controls-title">Metric & Pipeline Simulator</h2>
@@ -151,12 +178,35 @@
         </div>
       </section>
 
-      <section class="activity-section" aria-label="Recent pipeline activity">
+      <section class="probes-section" id="section-probes" aria-label="Local Service & Port Probes" draggable="true">
+        <div class="probes-card">
+          <div class="probes-header">
+            <div>
+              <h2 class="probes-title">Local Service &amp; Port Probes</h2>
+              <span class="probes-subtitle">Live reachability and round-trip latency for local services</span>
+            </div>
+            <div class="probes-actions">
+              <button id="btn-refresh-probes" class="btn btn-secondary btn-sm" type="button" aria-label="Refresh probe checks">
+                <span class="btn-icon" aria-hidden="true">🔄</span> Refresh
+              </button>
+              <button id="btn-open-add-probe" class="btn btn-primary btn-sm" type="button" aria-label="Add local service probe">
+                <span class="btn-icon" aria-hidden="true">➕</span> Add Service
+              </button>
+            </div>
+          </div>
+
+          <div class="probes-grid" id="probes-grid" role="region" aria-live="polite">
+            <!-- Dynamically populated probe cards -->
+          </div>
+        </div>
+      </section>
+
+      <section class="activity-section" id="section-activity" aria-label="Recent pipeline activity" draggable="true">
         <div class="activity-card">
           <div class="activity-header">
             <div>
               <h2 class="activity-title">Recent Pipeline Activity</h2>
-              <span class="activity-subtitle">Last 5 events</span>
+              <span class="activity-subtitle">Last 5 events &bull; Click event to inspect pipeline stages</span>
             </div>
             <div class="activity-results-count" id="activity-results-count" aria-live="polite">Showing 2 events</div>
           </div>
@@ -181,9 +231,74 @@
     </main>
 
     <footer class="dashboard-footer">
-      <p>Local Developer Dashboard &bull; Vanilla HTML, CSS &amp; JavaScript &bull; No external dependencies</p>
+      <p>Local Developer Dashboard &bull; Vanilla HTML, CSS &amp; JavaScript &bull; Zero external dependencies &bull; ASVS Level 3 High Assurance</p>
     </footer>
   </div>
+
+  <!-- Command Palette Modal (Ctrl+K) -->
+  <dialog id="modal-command-palette" class="modal-palette" aria-label="Command Palette">
+    <div class="palette-container">
+      <div class="palette-header">
+        <span class="palette-search-icon" aria-hidden="true">🔍</span>
+        <input type="search" id="input-command-palette" class="palette-input" placeholder="Type a command or filter (e.g., 'spike', 'gc', 'compact', 'probe')..." autocomplete="off" aria-autocomplete="list" aria-controls="palette-results">
+        <button id="btn-close-palette" class="btn-dialog-close" type="button" aria-label="Close command palette">&times;</button>
+      </div>
+      <ul id="palette-results" class="palette-results" role="listbox">
+        <!-- Dynamically populated command items -->
+      </ul>
+      <div class="palette-footer">
+        <span><kbd>↑</kbd> <kbd>↓</kbd> navigate</span>
+        <span><kbd>Enter</kbd> execute</span>
+        <span><kbd>Esc</kbd> close</span>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Add Service Probe Modal -->
+  <dialog id="modal-add-probe" class="modal-dialog" aria-labelledby="dialog-add-probe-title">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h2 id="dialog-add-probe-title" class="dialog-title">Register Local Service Probe</h2>
+        <button id="btn-close-probe-modal" class="btn-dialog-close" type="button" aria-label="Close probe dialog">&times;</button>
+      </div>
+      <form id="form-add-probe" class="dialog-form" method="dialog">
+        <div class="form-group">
+          <label for="input-probe-name" class="form-label">Service Name</label>
+          <input type="text" id="input-probe-name" class="form-input" placeholder="e.g., Frontend Dev Server, Auth API" required maxlength="40">
+        </div>
+        <div class="form-group">
+          <label for="input-probe-url" class="form-label">Loopback Endpoint URL</label>
+          <input type="url" id="input-probe-url" class="form-input" placeholder="http://127.0.0.1:3000/health" required pattern="https?://(127\.0\.0\.1|localhost|\[::1\])(:[0-9]+)?(/.*)?" title="Must be a local loopback address (127.0.0.1, localhost, [::1])">
+          <span class="form-hint">SSRF Protected: Only loopback addresses (127.0.0.1, localhost, [::1]) are permitted.</span>
+        </div>
+        <div class="dialog-actions">
+          <button type="button" id="btn-cancel-add-probe" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="btn-submit-add-probe" class="btn btn-primary">Save Probe</button>
+        </div>
+      </form>
+    </div>
+  </dialog>
+
+  <!-- Pipeline Stage Inspector Modal -->
+  <dialog id="modal-pipeline-inspector" class="modal-dialog modal-dialog-wide" aria-labelledby="dialog-pipeline-title">
+    <div class="dialog-content">
+      <div class="dialog-header">
+        <h2 id="dialog-pipeline-title" class="dialog-title">Pipeline Stage Diagnostics</h2>
+        <button id="btn-close-pipeline-modal" class="btn-dialog-close" type="button" aria-label="Close pipeline dialog">&times;</button>
+      </div>
+      <div class="pipeline-inspector-body">
+        <div class="pipeline-summary-bar" id="pipeline-summary-bar">
+          <!-- Populated by JS -->
+        </div>
+        <div class="pipeline-stepper" id="pipeline-stepper">
+          <!-- 4 stages dynamically populated -->
+        </div>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" id="btn-done-pipeline" class="btn btn-secondary">Close</button>
+      </div>
+    </div>
+  </dialog>
 
   <script src="app.js"></script>
 </body>

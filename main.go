@@ -10,6 +10,7 @@ import (
 	"io"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"path"
 	"path/filepath"
@@ -198,16 +199,103 @@ func telemetryHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 
 	_ = json.NewEncoder(w).Encode(map[string]any{
-		"status":        "online",
-		"uptime":        fmt.Sprintf("%.2fs", time.Since(startTime).Seconds()),
-		"uptimeSeconds": time.Since(startTime).Seconds(),
-		"allocBytes":    m.Alloc,
-		"allocMB":       float64(m.Alloc) / (1024 * 1024),
-		"sysBytes":      m.Sys,
-		"sysMB":         float64(m.Sys) / (1024 * 1024),
-		"numGC":         m.NumGC,
-		"goroutines":    runtime.NumGoroutine(),
-		"pid":           os.Getpid(),
+		"status":         "online",
+		"uptime":         fmt.Sprintf("%.2fs", time.Since(startTime).Seconds()),
+		"uptimeSeconds":  time.Since(startTime).Seconds(),
+		"allocBytes":     m.Alloc,
+		"allocMB":        float64(m.Alloc) / (1024 * 1024),
+		"sysBytes":       m.Sys,
+		"sysMB":          float64(m.Sys) / (1024 * 1024),
+		"heapInuseBytes": m.HeapInuse,
+		"heapInuseMB":    float64(m.HeapInuse) / (1024 * 1024),
+		"heapObjects":    m.HeapObjects,
+		"gcPauseTotalMs": float64(m.PauseTotalNs) / 1e6,
+		"numGC":          m.NumGC,
+		"goroutines":     runtime.NumGoroutine(),
+		"pid":            os.Getpid(),
+	})
+}
+
+func probeHandler(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	target := strings.TrimSpace(r.URL.Query().Get("target"))
+	if target == "" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"error": "Missing target query parameter",
+		})
+		return
+	}
+
+	parsedURL, err := url.Parse(target)
+	if err != nil || (parsedURL.Scheme != "http" && parsedURL.Scheme != "https") {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"error": "Invalid target URL scheme (must be http or https)",
+		})
+		return
+	}
+
+	hostname := strings.ToLower(parsedURL.Hostname())
+	// Strict SSRF protection: only local loopback hosts permitted
+	if hostname != "127.0.0.1" && hostname != "localhost" && hostname != "::1" && hostname != "[::1]" {
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(http.StatusBadRequest)
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"error": "Target must be a local loopback address (127.0.0.1, localhost, [::1])",
+		})
+		return
+	}
+
+	client := &http.Client{
+		Timeout: 1500 * time.Millisecond,
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			if len(via) >= 3 {
+				return fmt.Errorf("stopped after 3 redirects")
+			}
+			h := strings.ToLower(req.URL.Hostname())
+			if h != "127.0.0.1" && h != "localhost" && h != "::1" && h != "[::1]" {
+				return fmt.Errorf("redirect to non-loopback address blocked")
+			}
+			return nil
+		},
+	}
+
+	// Reconstruct target strictly using validated loopback host and request URI
+	safeURL := fmt.Sprintf("%s://%s%s", parsedURL.Scheme, parsedURL.Host, parsedURL.RequestURI())
+
+	start := time.Now()
+	resp, reqErr := client.Get(safeURL) // #nosec G704 -- target hostname is strictly whitelisted to local loopback addresses only
+	latencyMs := float64(time.Since(start).Microseconds()) / 1000.0
+
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+
+	if reqErr != nil {
+		_ = json.NewEncoder(w).Encode(map[string]any{
+			"target":     target,
+			"alive":      false,
+			"statusCode": 0,
+			"latencyMs":  latencyMs,
+			"error":      reqErr.Error(),
+			"timestamp":  time.Now().UTC().Format(time.RFC3339),
+		})
+		return
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	_ = json.NewEncoder(w).Encode(map[string]any{
+		"target":     target,
+		"alive":      resp.StatusCode >= 200 && resp.StatusCode < 400,
+		"statusCode": resp.StatusCode,
+		"latencyMs":  latencyMs,
+		"timestamp":  time.Now().UTC().Format(time.RFC3339),
 	})
 }
 
@@ -315,6 +403,7 @@ func setupMuxWithLimiter(limiter *IPRateLimiter) http.Handler {
 	mux.HandleFunc("/health", healthHandler)
 	mux.HandleFunc("/api/telemetry", telemetryHandler)
 	mux.HandleFunc("/api/gc", gcHandler)
+	mux.HandleFunc("/api/probe", probeHandler)
 	mux.HandleFunc("/", secureFileHandler)
 
 	return securityHeadersMiddleware(
@@ -372,7 +461,7 @@ func main() {
 
 	fmt.Printf("Local Dev Dashboard server running securely at http://%s\n", addr)
 	fmt.Println("Binding restricted to:", host)
-	fmt.Println("Allowed virtual routes: /, /index.html, /style.css, /app.js, /theme-init.js, /health, /api/telemetry, /api/gc")
+	fmt.Println("Allowed virtual routes: /, /index.html, /style.css, /app.js, /theme-init.js, /health, /api/telemetry, /api/gc, /api/probe")
 	fmt.Println("ASVS Level 3 security active: embed.FS virtualization, Sec-Fetch defense, sliding-window rate limiting, CSP Level 3 Trusted Types.")
 	fmt.Println("Source files, tests, and host binaries are completely isolated from HTTP runtime.")
 	fmt.Println("Press Ctrl+C to stop.")

@@ -49,9 +49,14 @@ This document details the architectural layout, security model, and data flow of
 - **`style.css`**: CSS variables for theming, responsive grid layouts, WCAG 2.2 Level AA calibrated color tokens (>4.5:1 text contrast and >3:1 non-text focus ring contrast in both dark and light modes), minimum target dimensions (≥24×24px / 42px touch height), explicit `:focus-visible` outlines, and `@media (prefers-reduced-motion: reduce)` support.
 - **`app.js`**: Contains:
   - `initTrustedTypes`: Configures W3C Trusted Types `default` policy that forbids dynamic HTML string sinks at the browser engine level.
-  - `MetricCalculator`: Pure mathematical logic for baseline metrics, bounded traffic spike calculation `[350, 850]`, build queue management (bounded 0 to 10), telemetry parsing, byte formatting, diagnostic snapshot generation (`generateDiagnosticSnapshot`), Markdown report formatting (`formatMarkdownReport`), multi-criteria event filtering (`filterActivityLog`), and activity log FIFO formatting.
-  - `safeStorage`: Exception-safe wrapper around `localStorage`.
+  - `MetricCalculator`: Pure mathematical logic for baseline metrics, bounded traffic spike calculation `[350, 850]`, build queue management (bounded 0 to 10), telemetry parsing, byte formatting, diagnostic snapshot generation (`generateDiagnosticSnapshot`), Markdown report formatting (`formatMarkdownReport`), multi-criteria event filtering (`filterActivityLog`), activity log FIFO formatting, SVG sparkline coordinate mapping (`generateSparklinePath`), probe uptime/latency calculation (`calculateProbeStats`), metric threshold limits (`evaluateThresholds`), command palette search (`filterCommands`), section reordering (`reorderSections`), and 4-stage pipeline execution metadata (`generateBuildStages`).
+  - `safeStorage`: Exception-safe wrapper around `localStorage` for theme, density, probe configurations, and layout order.
   - `checkServerHealth`: Dynamic health & telemetry polling that synchronizes real-time Go process memory and toggles between `Server: Online`, `Server: Offline`, and `Local File Mode`.
+  - `pollProbes`: Polls local loopback services (`/api/probe?target=...`) and computes rolling latency and uptime stats.
+  - `Command Palette`: Global keyboard engine (`Ctrl+K`, `Cmd+K`, `/`) providing fuzzy command search, action execution, and accessibility navigation.
+  - `View Density`: Adaptive display modes (`Compact` for IDE split-screen view vs. `Comfortable`).
+  - `Section Drag-and-Drop`: Native HTML5 drag-and-drop widget arrangement with persistent ordering.
+  - `Pipeline Step Inspector`: Semantic `<dialog>` modal rendering structured diagnostics across Lint, Test, SAST Gate, and Compilation stages.
   - `triggerCardPulse`: Zero-reflow animation via the Web Animations API.
   - `renderActivityList`: Accessible, injection-safe DOM builder for pipeline events with dynamic result count updates and standard `<time datetime="...">` metadata.
 
@@ -63,13 +68,13 @@ This document details the architectural layout, security model, and data flow of
 - Unified security headers middleware enforcing strict CSP Level 3 (`require-trusted-types-for 'script'`, `trusted-types default dashboardPolicy`, `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`), `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, and Cross-Origin Isolation headers (COOP/CORP).
 - Path traversal rejection middleware blocking encoded and unencoded directory traversal payloads (`..`, `%2e%2e`, `%00`).
 - DoS & Slowloris hardening via `ReadHeaderTimeout: 3s`, `ReadTimeout: 5s`, `WriteTimeout: 10s`, `IdleTimeout: 120s`, and `MaxHeaderBytes: 1MB`.
-- Authorized endpoints for `/health`, `/api/telemetry`, and `POST /api/gc`.
+- Authorized endpoints for `/health`, `/api/telemetry`, `POST /api/gc`, and `GET /api/probe?target=...` (strictly validated against loopback addresses with SSRF protection).
 - Automatic caching headers with `304 Not Modified` conditional validation via `http.ServeContent`.
 
 ### Test Suites
 - **Frontend & Calculator Tests (`test_dashboard.js`)**:
   - Automated tests running directly with `node --test`.
-  - Covers baseline state validation, boundary assertions, fuzz testing (100 iterations), build pipeline state transitions, formatBytes conversions, telemetry JSON parsing, memory simulation, diagnostic snapshot schema validation, markdown report generation, severity and text search log filtering, theme allowlist sanitization against DOM injection, FIFO trimming (5 items max), storage fallback behavior, and W3C Trusted Types policy validation.
+  - Covers baseline state validation, boundary assertions, fuzz testing (100 iterations), build pipeline state transitions, formatBytes conversions, telemetry JSON parsing, memory simulation, diagnostic snapshot schema validation, markdown report generation, severity and text search log filtering, theme allowlist sanitization against DOM injection, FIFO trimming (5 items max), storage fallback behavior, W3C Trusted Types policy validation, SVG sparkline path mathematics, multi-service probe statistics, metric threshold evaluations, command palette search filtering, layout section reordering, and 4-stage pipeline stepper generation.
 - **Backend Security & Routing Tests (`main_test.go`)**:
   - Automated tests running with `go test ./...`.
   - Asserts 200 OK on virtual embedded assets and API routes.
@@ -77,6 +82,7 @@ This document details the architectural layout, security model, and data flow of
   - Asserts 405 Method Not Allowed on disallowed HTTP verbs (`POST`, `PUT`, `DELETE`, `PATCH`).
   - Asserts 403 Forbidden on cross-site `Sec-Fetch` requests.
   - Asserts 429 Too Many Requests on rate limiter threshold exhaustion.
+  - Asserts 400 Bad Request and SSRF prevention on unauthorized probe targets (`google.com`, `192.168.1.1`, `169.254.169.254`).
   - Fuzzes path traversal payloads (`/..%2f`, `/%2e%2e/`, `//`, `%00`).
   - Validates delivery of all security headers, Trusted Types directives, and JSON telemetry contracts.
 
@@ -109,5 +115,7 @@ Key architectural choices and trade-offs are formally tracked in [`docs/adr/`](a
 - [**ADR 0002**](adr/0002-early-theme-bootstrap-strategy.md): Early Theme Bootstrap Strategy to Prevent FOUC
 - [**ADR 0003**](adr/0003-whitelisted-go-routing-and-csp.md): Hardened Whitelisted Go HTTP Routing & Strict CSP
 - [**ADR 0004**](adr/0004-owasp-asvs-level-3-and-advanced-standards.md): OWASP ASVS Level 3, embed.FS Virtualization, Trusted Types & Advanced Security Standards
+- [**ADR 0005**](adr/0005-observability-sparklines-and-service-probes.md): Real-Time SVG Sparklines, Multi-Service Probes, Command Palette, and Ergonomic UX Architecture
+
 
 

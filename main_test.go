@@ -355,8 +355,98 @@ func TestHealthAndTelemetryPayloads(t *testing.T) {
 	if _, ok := teleData["allocMB"]; !ok {
 		t.Errorf("Expected allocMB field in telemetry payload")
 	}
+	if _, ok := teleData["heapInuseMB"]; !ok {
+		t.Errorf("Expected heapInuseMB field in telemetry payload")
+	}
 	if _, ok := teleData["goroutines"]; !ok {
 		t.Errorf("Expected goroutines field in telemetry payload")
+	}
+}
+
+func TestServiceProbeHandler(t *testing.T) {
+	handler := setupMux()
+
+	// Start test server to probe against
+	ts := httptest.NewServer(handler)
+	defer ts.Close()
+
+	// 1. Valid probe to loopback test server
+	req := httptest.NewRequest(http.MethodGet, "/api/probe?target="+ts.URL+"/health", nil)
+	rec := httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusOK {
+		t.Fatalf("Expected 200 OK for /api/probe, got %d. Body: %s", rec.Code, rec.Body.String())
+	}
+
+	var result map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &result); err != nil {
+		t.Fatalf("Failed to parse probe JSON response: %v", err)
+	}
+
+	if result["alive"] != true {
+		t.Errorf("Expected alive to be true, got %v", result["alive"])
+	}
+	if result["statusCode"] != float64(http.StatusOK) {
+		t.Errorf("Expected statusCode 200, got %v", result["statusCode"])
+	}
+	if latency, ok := result["latencyMs"].(float64); !ok || latency < 0 {
+		t.Errorf("Expected valid positive latencyMs, got %v", result["latencyMs"])
+	}
+
+	// 2. Missing target parameter
+	req = httptest.NewRequest(http.MethodGet, "/api/probe", nil)
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusBadRequest {
+		t.Errorf("Expected 400 Bad Request for missing target, got %d", rec.Code)
+	}
+
+	// 3. Method restrictions
+	req = httptest.NewRequest(http.MethodPost, "/api/probe", nil)
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusMethodNotAllowed {
+		t.Errorf("Expected 405 Method Not Allowed for POST /api/probe, got %d", rec.Code)
+	}
+
+	// 4. Offline port on loopback
+	req = httptest.NewRequest(http.MethodGet, "/api/probe?target=http://127.0.0.1:49999/health", nil)
+	rec = httptest.NewRecorder()
+	handler.ServeHTTP(rec, req)
+	if rec.Code != http.StatusOK {
+		t.Fatalf("Expected 200 OK wrapper for unreachable probe, got %d", rec.Code)
+	}
+	var offlineResult map[string]any
+	if err := json.Unmarshal(rec.Body.Bytes(), &offlineResult); err != nil {
+		t.Fatalf("Failed to parse offline probe JSON: %v", err)
+	}
+	if offlineResult["alive"] != false {
+		t.Errorf("Expected offline probe alive to be false, got %v", offlineResult["alive"])
+	}
+}
+
+func TestProbeSSRFProtection(t *testing.T) {
+	handler := setupMux()
+
+	forbiddenTargets := []string{
+		"http://example.com/api",
+		"https://google.com",
+		"http://192.168.1.1/admin",
+		"http://10.0.0.1/status",
+		"http://169.254.169.254/latest/meta-data",
+		"ftp://127.0.0.1/file",
+		"file:///etc/passwd",
+	}
+
+	for _, target := range forbiddenTargets {
+		req := httptest.NewRequest(http.MethodGet, "/api/probe?target="+target, nil)
+		rec := httptest.NewRecorder()
+		handler.ServeHTTP(rec, req)
+
+		if rec.Code != http.StatusBadRequest {
+			t.Errorf("Expected 400 Bad Request for SSRF target %q, got %d", target, rec.Code)
+		}
 	}
 }
 

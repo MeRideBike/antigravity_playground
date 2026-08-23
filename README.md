@@ -27,7 +27,24 @@ A lightweight, high-assurance (OWASP ASVS Level 3), zero-dependency developer da
 
 ## Features
 
-- **Key Metrics Overview**: Real-time display cards for Active Build Jobs, API Requests / Sec, and Memory Heap Usage.
+- **Key Metrics & Real-Time SVG Sparklines**:
+  - Real-time display cards for Active Build Jobs, API Requests / Sec, and Memory Heap Usage.
+  - Zero-dependency mathematical SVG sparklines on metric cards rendering rolling 25-point trendlines and translucent gradient area fills.
+  - Threshold alert indicators with color-coded warning/critical visual cues when traffic, memory, or queue limits are approached.
+- **Multi-Service Health & Local Port Probe Hub**:
+  - Live probe monitor tracking local microservices and API servers (`:8080`, `:3000`, `:5000`).
+  - Backend SSRF-safe probe gateway (`GET /api/probe?target=...`) enforcing strict loopback validation (`127.0.0.1`, `localhost`, `::1`), rejecting external IPs, LAN endpoints, and cloud metadata.
+  - Client manages probe registration with HTML5 pattern validation, calculating uptime percentages, live latency tags, and persisting configurations to `localStorage`.
+- **Interactive 4-Stage Pipeline Step Inspector**:
+  - Clicking any activity log entry opens a semantic `<dialog>` modal rendering structured diagnostics for all 4 verification gates: `1. Syntax & Lint` -> `2. Unit Tests` -> `3. OWASP ASVS SAST Gate` -> `4. Binary Build`.
+  - Computes granular execution timings, status badges, and CLI command output logs per stage.
+- **Global Quick-Action Command Palette (`Ctrl+K` / `Cmd+K`)**:
+  - Accessible `<dialog>` modal with ARIA `combobox` / `listbox` pattern.
+  - Instant fuzzy search across system actions, view density toggles, probe management, and diagnostic report exports.
+  - Full keyboard navigation (`ArrowUp`, `ArrowDown`, `Enter`, `Escape`, `/`).
+- **Customizable Workspace Density & Widget Layout Reorder Engine**:
+  - `Compact` vs. `Comfortable` view modes for high-density IDE 50/50 split-screen layouts.
+  - Native HTML5 Drag and Drop section arrangement persisted to `safeStorage` for instant layout restoration across sessions.
 - **Interactive Metric & Pipeline Simulator**:
   - **Traffic Spike Simulation**: Generates bounded realistic traffic spikes (350–850 req/s), calculates delta/percentage increases, and triggers smooth pulse animations via the Web Animations API.
   - **Build Pipeline Controls**: Interactively `Queue Build`, `Complete Job`, or `Simulate Failure` with bounded capacity enforcement (0 to 10 max).
@@ -58,6 +75,7 @@ A lightweight, high-assurance (OWASP ASVS Level 3), zero-dependency developer da
 - **Automated Verification Suites**:
   - Pure calculation, build state transitions, FIFO trimming, theme sanitization, storage utilities, and Trusted Types policy tested with Node.js (`node:test`).
   - Automated Go backend security test suite (`main_test.go`) validating virtual filesystem serving, Sec-Fetch filtering, rate limiting, route whitelisting, HTTP method gating, path traversal immunity, and security headers.
+
 
 ---
 

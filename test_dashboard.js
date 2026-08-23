@@ -311,3 +311,151 @@ test('initTrustedTypes - creates default policy and strictly forbids dynamic HTM
   }
 });
 
+test('MetricCalculator - generateSparklinePath produces valid SVG path syntax and handles edge cases', () => {
+  // 1. Normal points array
+  const res1 = MetricCalculator.generateSparklinePath([10, 20, 15, 30], 120, 32);
+  assert.ok(res1.line.startsWith('M 0.0,'));
+  assert.ok(res1.line.includes(' L '));
+  assert.ok(res1.area.startsWith('M 0.0,'));
+  assert.ok(res1.area.endsWith('L 120,32 L 0,32 Z'));
+
+  // 2. Empty array
+  const resEmpty = MetricCalculator.generateSparklinePath([]);
+  assert.strictEqual(resEmpty.line, '');
+  assert.strictEqual(resEmpty.area, '');
+
+  // 3. Single point
+  const resSingle = MetricCalculator.generateSparklinePath([100], 120, 32);
+  assert.strictEqual(resSingle.line, 'M 0,16 L 120,16');
+  assert.strictEqual(resSingle.area, 'M 0,16 L 120,16 L 120,32 L 0,32 Z');
+
+  // 4. Uniform identical points (division by zero protection)
+  const resUniform = MetricCalculator.generateSparklinePath([50, 50, 50], 120, 32);
+  assert.ok(resUniform.line.includes('L'));
+  assert.ok(!resUniform.line.includes('NaN'));
+
+  // 5. Non-number / NaN values handled defensively
+  const resNaN = MetricCalculator.generateSparklinePath([10, NaN, 'invalid', 40], 120, 32);
+  assert.ok(!resNaN.line.includes('NaN'));
+});
+
+test('MetricCalculator - calculateProbeStats accurately computes uptime and latency', () => {
+  // Mixed alive and offline samples
+  const history = [
+    { alive: true, latencyMs: 10.0 },
+    { alive: true, latencyMs: 20.0 },
+    { alive: false, latencyMs: 0 },
+    { alive: true, latencyMs: 30.0 }
+  ];
+  const stats = MetricCalculator.calculateProbeStats(history);
+  assert.strictEqual(stats.uptimePct, 75.0); // 3 of 4 = 75%
+  assert.strictEqual(stats.avgLatencyMs, 20.0); // (10+20+30)/3 = 20
+  assert.strictEqual(stats.isAlive, true);
+
+  // Empty history
+  const emptyStats = MetricCalculator.calculateProbeStats([]);
+  assert.strictEqual(emptyStats.uptimePct, 100);
+  assert.strictEqual(emptyStats.avgLatencyMs, 0);
+  assert.strictEqual(emptyStats.isAlive, false);
+
+  // All offline
+  const offlineStats = MetricCalculator.calculateProbeStats([
+    { alive: false, latencyMs: 0 },
+    { alive: false, latencyMs: 0 }
+  ]);
+  assert.strictEqual(offlineStats.uptimePct, 0);
+  assert.strictEqual(offlineStats.avgLatencyMs, 0);
+  assert.strictEqual(offlineStats.isAlive, false);
+});
+
+test('MetricCalculator - evaluateThresholds flags warnings when limits are reached', () => {
+  // Baseline state (normal)
+  const normalState = { traffic: 142, memoryMB: 318, builds: 3 };
+  const normalThresholds = MetricCalculator.evaluateThresholds(normalState);
+  assert.strictEqual(normalThresholds.trafficWarning, false);
+  assert.strictEqual(normalThresholds.memoryWarning, false);
+  assert.strictEqual(normalThresholds.buildsWarning, false);
+
+  // Exceeded limits
+  const warnState = { traffic: 550, memoryMB: 800, builds: 10 };
+  const warnThresholds = MetricCalculator.evaluateThresholds(warnState);
+  assert.strictEqual(warnThresholds.trafficWarning, true);
+  assert.strictEqual(warnThresholds.memoryWarning, true);
+  assert.strictEqual(warnThresholds.buildsWarning, true);
+
+  // Null/undefined state
+  const nullThresholds = MetricCalculator.evaluateThresholds(null);
+  assert.strictEqual(nullThresholds.trafficWarning, false);
+});
+
+test('MetricCalculator - filterCommands searches commands by title, category, and ID', () => {
+  const commands = [
+    { id: 'cmd-traffic-spike', title: 'Simulate Traffic Spike', category: 'Actions' },
+    { id: 'cmd-trigger-gc', title: 'Trigger Server GC', category: 'Actions' },
+    { id: 'cmd-density-compact', title: 'Switch to Compact View Density', category: 'View' },
+    { id: 'cmd-export-json', title: 'Export JSON Diagnostic Snapshot', category: 'Reports' }
+  ];
+
+  // Empty query returns all
+  assert.strictEqual(MetricCalculator.filterCommands(commands, '').length, 4);
+  assert.strictEqual(MetricCalculator.filterCommands(commands, '   ').length, 4);
+
+  // Title search
+  const gcMatch = MetricCalculator.filterCommands(commands, 'gc');
+  assert.strictEqual(gcMatch.length, 1);
+  assert.strictEqual(gcMatch[0].id, 'cmd-trigger-gc');
+
+  // Category search
+  const viewMatch = MetricCalculator.filterCommands(commands, 'view');
+  assert.strictEqual(viewMatch.length, 1);
+  assert.strictEqual(viewMatch[0].id, 'cmd-density-compact');
+
+  // No match
+  const noMatch = MetricCalculator.filterCommands(commands, 'nonexistentxyz');
+  assert.strictEqual(noMatch.length, 0);
+
+  // Non-array input
+  assert.deepStrictEqual(MetricCalculator.filterCommands(null, 'test'), []);
+});
+
+test('MetricCalculator - reorderSections reorders layout arrays safely', () => {
+  const original = ['sec-1', 'sec-2', 'sec-3', 'sec-4'];
+
+  // Move sec-1 to sec-3 position
+  const reordered = MetricCalculator.reorderSections(original, 'sec-1', 'sec-3');
+  assert.deepStrictEqual(reordered, ['sec-2', 'sec-1', 'sec-3', 'sec-4']);
+
+  // Move sec-4 to sec-1 position
+  const reordered2 = MetricCalculator.reorderSections(original, 'sec-4', 'sec-1');
+  assert.deepStrictEqual(reordered2, ['sec-4', 'sec-1', 'sec-2', 'sec-3']);
+
+  // Invalid IDs returns unchanged order
+  const invalidReorder = MetricCalculator.reorderSections(original, 'missing-id', 'sec-2');
+  assert.deepStrictEqual(invalidReorder, original);
+
+  // Non-array input returns empty
+  assert.deepStrictEqual(MetricCalculator.reorderSections(null, 'a', 'b'), []);
+});
+
+test('MetricCalculator - generateBuildStages constructs 4-stage pipeline execution metadata', () => {
+  // Successful build
+  const successStages = MetricCalculator.generateBuildStages(105, true, 200);
+  assert.strictEqual(successStages.length, 4);
+  assert.strictEqual(successStages[0].name, '1. Syntax & Static Lint');
+  assert.strictEqual(successStages[0].status, 'success');
+  assert.strictEqual(successStages[1].name, '2. Unit & Integration Tests');
+  assert.strictEqual(successStages[1].status, 'success');
+  assert.strictEqual(successStages[2].name, '3. OWASP ASVS SAST Gate');
+  assert.strictEqual(successStages[2].status, 'success');
+  assert.strictEqual(successStages[3].name, '4. Hermetic Binary Compilation');
+  assert.strictEqual(successStages[3].status, 'success');
+
+  // Failed build
+  const failedStages = MetricCalculator.generateBuildStages(106, false, 150);
+  assert.strictEqual(failedStages.length, 4);
+  assert.strictEqual(failedStages[1].status, 'failed');
+  assert.strictEqual(failedStages[2].status, 'skipped');
+  assert.strictEqual(failedStages[3].status, 'skipped');
+});
+
+
