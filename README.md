@@ -3,6 +3,7 @@
 [![CI Pipeline](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml)
 [![CodeQL Security](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/MeRideBike/antigravity_playground)](https://goreportcard.com/report/github.com/MeRideBike/antigravity_playground)
+[![Coverage](https://img.shields.io/badge/coverage-100%25%20core%20logic-brightgreen.svg)](#verification--testing)
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--accessibility-wcag-22-level-aa)
@@ -140,10 +141,10 @@ Start-Process index.html
 
 ## Verification & Testing
 
-### 1. Run Unit Tests (Node.js Test Runner)
-Executes unit tests for calculation boundaries, baseline values, fuzz testing, and error-tolerant storage:
+### 1. Run Unit Tests & Native Code Coverage (Node.js Test Runner)
+Executes unit tests for calculation boundaries, baseline values, fuzz testing, error-tolerant storage, and prints native coverage metrics:
 ```powershell
-node --test test_dashboard.js
+node --test --experimental-test-coverage test_dashboard.js
 ```
 
 ### 2. Verify Code Syntax

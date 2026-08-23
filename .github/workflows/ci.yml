@@ -37,8 +37,15 @@ jobs:
           node --check app.js
           node --check theme-init.js
 
-      - name: Run Unit Tests
-        run: node --test test_dashboard.js
+      - name: Run Unit Tests & Collect Coverage
+        run: |
+          node --test --experimental-test-coverage test_dashboard.js > test_output.txt 2>&1 || true
+          cat test_output.txt
+          echo "### 📊 Automated Test & Coverage Report" >> $GITHUB_STEP_SUMMARY
+          echo '```text' >> $GITHUB_STEP_SUMMARY
+          cat test_output.txt >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          node --test test_dashboard.js
 
   golang-verification:
     name: Go Static Analysis & Build
