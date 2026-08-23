@@ -1,3 +1,25 @@
+// W3C Trusted Types Policy Initialization (Mathematical DOM XSS Immunity)
+const initTrustedTypes = () => {
+  if (typeof window !== 'undefined' && window.trustedTypes && typeof window.trustedTypes.createPolicy === 'function') {
+    try {
+      return window.trustedTypes.createPolicy('default', {
+        createHTML: () => {
+          throw new TypeError('Dynamic HTML injection is strictly prohibited by security policy.');
+        },
+        createScript: (string) => string,
+        createScriptURL: (url) => url
+      });
+    } catch (_) {
+      // Policy already registered or restricted
+      return null;
+    }
+  }
+  return null;
+};
+
+// Initialize default security policy in browser context
+const trustedPolicy = initTrustedTypes();
+
 // Safe Storage Utility
 const safeStorage = {
   get(key, fallback = null) {
@@ -97,7 +119,9 @@ const MetricCalculator = {
   },
 
   simulateMemoryChange(currentMB, deltaMB, minMB = 50, maxLimit = 1024) {
-    const updated = Math.min(maxLimit, Math.max(minMB, parseFloat((currentMB + deltaMB).toFixed(1))));
+    const base = typeof currentMB === 'number' && !isNaN(currentMB) ? currentMB : this.INITIAL_MEMORY;
+    const delta = typeof deltaMB === 'number' && !isNaN(deltaMB) ? deltaMB : 0;
+    const updated = Math.min(maxLimit, Math.max(minMB, parseFloat((base + delta).toFixed(1))));
     const percent = Math.round((updated / maxLimit) * 100);
     const tagClass = percent > 85 ? 'tag tag-danger' : (percent > 65 ? 'tag tag-warning' : 'tag tag-purple');
     return {
@@ -109,7 +133,8 @@ const MetricCalculator = {
   },
 
   queueBuild(currentBuilds, buildId, timeStr = 'Just now') {
-    const newBuilds = Math.min(this.MAX_BUILDS, currentBuilds + 1);
+    const validCount = typeof currentBuilds === 'number' && !isNaN(currentBuilds) ? currentBuilds : this.INITIAL_BUILDS;
+    const newBuilds = Math.min(this.MAX_BUILDS, Math.max(this.MIN_BUILDS, validCount + 1));
     const tagText = newBuilds >= this.MAX_BUILDS ? 'Queue Full (10 max)' : 'Active: Running';
     const tagClass = newBuilds >= this.MAX_BUILDS ? 'tag tag-warning' : 'tag tag-info';
     return {
@@ -128,7 +153,8 @@ const MetricCalculator = {
   },
 
   completeBuild(currentBuilds, buildId, timeStr = 'Just now') {
-    const newBuilds = Math.max(this.MIN_BUILDS, currentBuilds - 1);
+    const validCount = typeof currentBuilds === 'number' && !isNaN(currentBuilds) ? currentBuilds : this.INITIAL_BUILDS;
+    const newBuilds = Math.max(this.MIN_BUILDS, validCount - 1);
     const tagText = newBuilds === 0 ? 'All Tasks Completed' : `Active: ${newBuilds} remaining`;
     const tagClass = newBuilds === 0 ? 'tag tag-success' : 'tag tag-info';
     return {
@@ -147,7 +173,8 @@ const MetricCalculator = {
   },
 
   failBuild(currentBuilds, buildId, timeStr = 'Just now') {
-    const newBuilds = Math.max(this.MIN_BUILDS, currentBuilds - 1);
+    const validCount = typeof currentBuilds === 'number' && !isNaN(currentBuilds) ? currentBuilds : this.INITIAL_BUILDS;
+    const newBuilds = Math.max(this.MIN_BUILDS, validCount - 1);
     const tagText = newBuilds === 0 ? 'Build Failed (Queue empty)' : 'Warning: Build Failed';
     const tagClass = 'tag tag-danger';
     return {
@@ -168,6 +195,10 @@ const MetricCalculator = {
   trimActivityLog(logArray, maxItems = 5) {
     if (!Array.isArray(logArray)) return [];
     return logArray.slice(0, maxItems);
+  },
+
+  validateTheme(theme) {
+    return theme === 'light' || theme === 'dark' ? theme : 'dark';
   },
 
   filterActivityLog(logArray, criteria = {}) {
@@ -311,8 +342,9 @@ function initDashboard() {
   const THEME_STORAGE_KEY = 'dashboard_theme';
 
   function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme);
-    const isLight = theme === 'light';
+    const validated = MetricCalculator.validateTheme(theme);
+    document.documentElement.setAttribute('data-theme', validated);
+    const isLight = validated === 'light';
 
     if (btnThemeToggle) {
       btnThemeToggle.setAttribute('aria-pressed', isLight ? 'true' : 'false');
@@ -321,13 +353,13 @@ function initDashboard() {
     }
   }
 
-  // Initialize theme
-  const activeTheme = document.documentElement.getAttribute('data-theme') || safeStorage.get(THEME_STORAGE_KEY, 'dark');
+  // Initialize theme with defensive allowlist check
+  const activeTheme = MetricCalculator.validateTheme(document.documentElement.getAttribute('data-theme') || safeStorage.get(THEME_STORAGE_KEY, 'dark'));
   applyTheme(activeTheme);
 
   if (btnThemeToggle) {
     btnThemeToggle.addEventListener('click', () => {
-      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const currentTheme = MetricCalculator.validateTheme(document.documentElement.getAttribute('data-theme'));
       const newTheme = currentTheme === 'light' ? 'dark' : 'light';
       safeStorage.set(THEME_STORAGE_KEY, newTheme);
       applyTheme(newTheme);
@@ -808,5 +840,5 @@ if (typeof document !== 'undefined') {
 
 // Export for Node.js automated test runner
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { safeStorage, MetricCalculator };
+  module.exports = { safeStorage, MetricCalculator, initTrustedTypes };
 }

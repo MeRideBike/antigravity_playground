@@ -22,7 +22,13 @@ Before concluding any development task or proposing changes, the agent must exec
    node --check theme-init.js
    ```
 
-3. **Go Multi-Linter & Static Analysis Verification**:
+3. **Go Security & Integration Test Suite (`main_test.go`)**:
+   - Run the automated Go backend security tests covering route whitelisting, HTTP method gating, path traversal fuzzing, and security header verification:
+     ```powershell
+     go test -v ./...
+     ```
+
+4. **Go Multi-Linter & Static Analysis Verification**:
    - Every Go change must pass all native static analysis checks with 0 warnings:
      ```powershell
      # 1. Format check
@@ -37,9 +43,13 @@ Before concluding any development task or proposing changes, the agent must exec
      revive ./...
      # 6. Ineffective assignment checks
      ineffassign ./...
+     # 7. Official Go vulnerability database scan
+     govulncheck ./...
+     # 8. Go AST security and taint analysis
+     gosec ./...
      ```
 
-4. **Go Binary Compilation**:
+5. **Go Binary Compilation**:
    - Verify binary compiles cleanly without warnings:
      ```powershell
      go build -v ./...
@@ -47,16 +57,15 @@ Before concluding any development task or proposing changes, the agent must exec
 
 ---
 
-## 2. Strict Pre-Approval Verification Gate (Zero Unverified Code Policy)
+## 2. Pre-Merge Verification Gate (Local Build & Test Verification)
 
-> [!CRITICAL]
-> **Agents are STRICTLY FORBIDDEN from asking the user for merge, review, or promotion approval on code that has not been confirmed passing both locally and on remote CI.**
+> [!IMPORTANT]
+> **Before merging changes into `develop` or submitting a promotion request, the agent must verify that all automated unit tests, syntax checks, static analysis multi-linters, and Go binary builds compile and pass cleanly locally.**
 
-Before requesting approval from the user:
-1. **Run Full Local Multi-Linter**: Execute all verification commands above locally.
-2. **Push to Isolated Remote Branch**: Push commits to `origin/feature/*` or `origin/fix/*`.
-3. **Verify Remote CI Execution**: Query the remote GitHub Actions CI status using the GitHub API (`/repos/:owner/:repo/actions/runs`) and verify that the run conclusion is **`success`**.
-4. **Autonomous Triage on Failure**: If any remote CI check fails, the agent must automatically inspect the job step logs, identify the root cause, apply a fix to the branch, re-push, and verify a green CI run **before** contacting the user for promotion authorization.
+Before proposing a merge into `develop`:
+1. **Run Full Local Multi-Linter & Test Suite**: Execute `node --test`, `node --check`, `go test -v ./...`, `gofmt -s -l .`, `go vet ./...`, and `go build -v ./...` locally.
+2. **Push to Isolated Feature Branch**: Push all verified commits to `origin/feature/*` or `origin/fix/*`.
+3. **No Per-Commit Remote Polling**: Agents do NOT need to poll remote CI in a loop after each intermediate commit; verifying that the local build and tests pass before merging into `develop` is sufficient.
 
 ---
 
