@@ -57,15 +57,15 @@ gitGraph
    merge feature/new-widget id: "Merge to Dev"
    checkout test
    merge develop id: "Promote to Test"
-   checkout main
-   merge test id: "Release to Main" tag: "v1.0"
+   checkout production
+   merge test id: "Release to Prod" tag: "v1.0"
 ```
 
 1. **Branch Isolation (`feature/*`, `agent/*`, `fix/*`)**:
    - All development tasks MUST branch off `develop`.
-   - Direct commits to `develop`, `test`, or `main` are strictly forbidden for feature work.
+   - Direct commits to `develop`, `test`, or `production` are strictly forbidden for feature work.
 2. **Enterprise "Golden Standard" Commits**:
    - Commits MUST follow Conventional Commits format (`feat(...)`, `fix(...)`, `docs(...)`, `test(...)`, `refactor(...)`, etc.) with concise, imperative subjects (max 72 chars) and rationale in the body.
 3. **Role Boundary & Separation of Concerns**:
    - **Development Agent**: Builds feature, executes unit tests (`node --test`), syntax checks (`node -c`), writes golden commit, pushes to remote branch (`origin/feature/*`), and concludes.
-   - **Reconciliation / Merge Task**: Inspects diffs, verifies integration, and performs merges into `develop` → `test` → `main` in a distinct review/merge step.
+   - **Reconciliation / Merge Task**: Inspects diffs, verifies integration, and performs merges into `develop` → `test` → `production` in a distinct review/merge step.
