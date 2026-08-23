@@ -350,11 +350,15 @@ func main() {
 
 	host := *hostFlag
 	port := *portFlag
-	addr := net.JoinHostPort(host, port)
+
+	// Sanitize host and port to prevent CWE-117 log injection
+	safeHost := strings.ReplaceAll(strings.ReplaceAll(host, "\r", ""), "\n", "")
+	safePort := strings.ReplaceAll(strings.ReplaceAll(port, "\r", ""), "\n", "")
+	addr := net.JoinHostPort(safeHost, safePort)
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatalf("Failed to start server on %s (Address/Port may already be in use): %v\n", addr, err)
+		log.Fatalf("Failed to start server on %s (Address/Port may already be in use): %v\n", addr, err) // #nosec G706 -- host and port are sanitized against CRLF injection
 	}
 
 	limiter := newIPRateLimiter(100, 1*time.Minute)
