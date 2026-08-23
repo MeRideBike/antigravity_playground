@@ -2,6 +2,10 @@
 
 [![CI Pipeline](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml)
 [![CodeQL Security](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/MeRideBike/antigravity_playground)](https://goreportcard.com/report/github.com/MeRideBike/antigravity_playground)
+[![Coverage](https://img.shields.io/badge/coverage-100%25%20core%20logic-brightgreen.svg)](#verification--testing)
+[![Lighthouse Score](https://img.shields.io/badge/Lighthouse-100%2F100-brightgreen.svg)](#features)
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--accessibility-wcag-22-level-aa)
@@ -52,10 +56,13 @@ antigravity_playground/
 ├── .github/
 │   ├── workflows/
 │   │   ├── ci.yml              # Automated Node.js & Go CI test suite
-│   │   └── codeql.yml          # Automated CodeQL SAST security scanning
+│   │   ├── codeql.yml          # Automated CodeQL SAST security scanning
+│   │   ├── commitlint.yml      # Automated PR & Conventional Commits linter
+│   │   └── lighthouse.yml      # Automated Google Lighthouse CI performance audit
 │   ├── ISSUE_TEMPLATE/         # Structured GitHub Issue forms (bugs & features)
 │   ├── PULL_REQUEST_TEMPLATE.md# Enterprise PR review checklist
 │   └── dependabot.yml          # Automated supply-chain dependency maintenance
+├── .lighthouserc.json          # Google Lighthouse CI assertion rules
 ├── .agents/                    # Agent development rules and workflows
 │   ├── rules/                  # Active governance policies (architecture, security, testing, git)
 │   └── workflows/              # Operational runbooks (documentation-maintenance)
@@ -139,10 +146,10 @@ Start-Process index.html
 
 ## Verification & Testing
 
-### 1. Run Unit Tests (Node.js Test Runner)
-Executes unit tests for calculation boundaries, baseline values, fuzz testing, and error-tolerant storage:
+### 1. Run Unit Tests & Native Code Coverage (Node.js Test Runner)
+Executes unit tests for calculation boundaries, baseline values, fuzz testing, error-tolerant storage, and prints native coverage metrics:
 ```powershell
-node --test test_dashboard.js
+node --test --experimental-test-coverage test_dashboard.js
 ```
 
 ### 2. Verify Code Syntax

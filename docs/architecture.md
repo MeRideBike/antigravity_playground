@@ -65,9 +65,13 @@ This document details the architectural layout, security model, and data flow of
 
 - **Automated Continuous Integration (`.github/workflows/ci.yml`)**:
   - Runs on all pushes and pull requests across `develop`, `test`, `production`, and feature branches.
-  - Verifies JavaScript syntax (`node --check`), executes unit tests (`node --test`), runs Go static analysis (`go vet`), and verifies binary builds (`go build`).
+  - Verifies JavaScript syntax (`node --check`), executes unit tests with native coverage (`node --test --experimental-test-coverage`), runs Go static analysis (`go vet`), and verifies binary builds (`go build`).
 - **Static Application Security Testing (`.github/workflows/codeql.yml`)**:
   - Automatically executes GitHub CodeQL SAST scanning for Go and JavaScript to detect security vulnerabilities and injection risks.
+- **Automated Google Lighthouse CI (`.github/workflows/lighthouse.yml`)**:
+  - Executes automated web audits to enforce 100% scores across Performance, Accessibility, Best Practices, and SEO based on `.lighthouserc.json`.
+- **Automated PR & Commit Linter (`.github/workflows/commitlint.yml`)**:
+  - Validates that pull request titles strictly follow Conventional Commits formatting.
 - **Continuous Deployment**:
   - Automated deployment of the `production` branch to GitHub Pages CDN at `https://meridebike.github.io/antigravity_playground/`.
 

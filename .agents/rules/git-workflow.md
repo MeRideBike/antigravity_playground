@@ -47,6 +47,9 @@ All commits created by agents or human contributors must strictly follow the **C
 - Explain the **why** (motivation and rationale), not just repeating the what.
 - Mention verification performed (e.g. `"Validated with node --test and node -c"`).
 
+### Automated PR Gatekeeping
+- Pull Requests opened against `develop`, `test`, or `production` are automatically validated by the [`.github/workflows/commitlint.yml`](../../.github/workflows/commitlint.yml) GitHub Action. Non-conforming PR titles or commit headers will be rejected.
+
 ---
 
 ## 3. Agent Task & Role Boundaries (Separation of Concerns)

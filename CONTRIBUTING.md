@@ -41,6 +41,8 @@ We strictly follow the [Conventional Commits](https://www.conventionalcommits.or
 - `refactor`: Code restructuring without external behavior changes
 - `chore`: Tooling, workflow, or governance updates
 
+> **Note**: Pull Requests are automatically validated in CI via [`.github/workflows/commitlint.yml`](.github/workflows/commitlint.yml) to ensure strict adherence to Conventional Commits.
+
 ---
 
 ## 3. Local Verification Commands
