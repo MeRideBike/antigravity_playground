@@ -8,7 +8,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"net/http"
 	"os"
@@ -358,7 +357,8 @@ func main() {
 
 	listener, err := net.Listen("tcp", addr)
 	if err != nil {
-		log.Fatalf("Failed to start server on %s (Address/Port may already be in use): %v\n", addr, err) // #nosec G706 -- host and port are sanitized against CRLF injection
+		fmt.Fprintf(os.Stderr, "Failed to start server on %s (Address/Port may already be in use): %v\n", addr, err)
+		os.Exit(1)
 	}
 
 	limiter := newIPRateLimiter(100, 1*time.Minute)
@@ -387,6 +387,7 @@ func main() {
 	}
 
 	if err := server.Serve(listener); err != nil && err != http.ErrServerClosed {
-		log.Fatalf("Server error: %v\n", err)
+		fmt.Fprintf(os.Stderr, "Server error: %v\n", err)
+		os.Exit(1)
 	}
 }
