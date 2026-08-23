@@ -50,14 +50,15 @@ We strictly follow the [Conventional Commits](https://www.conventionalcommits.or
 Before opening a PR, run all native checks:
 
 ```powershell
-# 1. Run Node.js Unit Tests
-node --test test_dashboard.js
+# 1. Run Node.js Unit Tests with Coverage
+node --test --experimental-test-coverage test_dashboard.js
 
 # 2. Verify JavaScript Syntax
 node --check app.js
 node --check theme-init.js
 
-# 3. Verify Go Static Analysis
+# 3. Verify Go Formatting & Static Analysis
+gofmt -s -d main.go
 go vet main.go
 
 # 4. Verify Go Compilation

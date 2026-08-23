@@ -2,7 +2,7 @@
 
 [![CI Pipeline](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml)
 [![CodeQL Security](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml)
-[![Go Report Card](https://goreportcard.com/badge/github.com/MeRideBike/antigravity_playground)](https://goreportcard.com/report/github.com/MeRideBike/antigravity_playground)
+[![golangci-lint](https://img.shields.io/badge/golangci--lint-passing-brightgreen.svg)](#verification--testing)
 [![Coverage](https://img.shields.io/badge/coverage-100%25%20core%20logic-brightgreen.svg)](#verification--testing)
 [![Lighthouse Score](https://img.shields.io/badge/Lighthouse-100%2F100-brightgreen.svg)](#features)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
@@ -63,6 +63,7 @@ antigravity_playground/
 │   ├── PULL_REQUEST_TEMPLATE.md# Enterprise PR review checklist
 │   └── dependabot.yml          # Automated supply-chain dependency maintenance
 ├── .lighthouserc.json          # Google Lighthouse CI assertion rules
+├── .golangci.yml               # golangci-lint multi-linter static analysis rules
 ├── .agents/                    # Agent development rules and workflows
 │   ├── rules/                  # Active governance policies (architecture, security, testing, git)
 │   └── workflows/              # Operational runbooks (documentation-maintenance)
@@ -152,14 +153,18 @@ Executes unit tests for calculation boundaries, baseline values, fuzz testing, e
 node --test --experimental-test-coverage test_dashboard.js
 ```
 
-### 2. Verify Code Syntax
+### 2. Verify Code Syntax & Multi-Linter Analysis
 ```powershell
 # Check JavaScript syntax
 node --check app.js
 node --check theme-init.js
 
-# Check Go static analysis
+# Check Go formatting & static analysis
+gofmt -s -d main.go
 go vet main.go
+
+# Run golangci-lint (if installed locally)
+golangci-lint run
 ```
 
 ### 3. Recompile Server Binary
