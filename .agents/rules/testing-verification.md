@@ -23,8 +23,9 @@ Before concluding any development task or proposing changes, the agent must exec
      node --check app.js
      node --check theme-init.js
      ```
-   - Check Go static analysis:
+   - Check Go formatting & static analysis (Go Report Card A+ Standards):
      ```powershell
+     gofmt -s -d main.go
      go vet main.go
      ```
 

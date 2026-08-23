@@ -2,6 +2,7 @@
 
 [![CI Pipeline](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml)
 [![CodeQL Security](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml)
+[![Go Report Card](https://goreportcard.com/badge/github.com/MeRideBike/antigravity_playground)](https://goreportcard.com/report/github.com/MeRideBike/antigravity_playground)
 [![Live Demo](https://img.shields.io/badge/demo-online-brightgreen.svg)](https://meridebike.github.io/antigravity_playground/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![WCAG 2.2 Level AA](https://img.shields.io/badge/accessibility-WCAG%202.2%20AA-success.svg)](#security--accessibility-wcag-22-level-aa)
