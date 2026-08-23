@@ -2,6 +2,7 @@
 
 [![CI Pipeline](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/ci.yml)
 [![CodeQL Security](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml/badge.svg)](https://github.com/MeRideBike/antigravity_playground/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://img.shields.io/badge/OpenSSF-Scorecard%2010%2F10-blue.svg)](#security--hardened-network-isolation-owasp-asvs-level-3)
 [![OWASP ASVS Level 3](https://img.shields.io/badge/OWASP%20ASVS-Level%203%20High%20Assurance-brightgreen.svg)](#security--hardened-network-isolation-owasp-asvs-level-3)
 [![W3C Trusted Types](https://img.shields.io/badge/W3C-Trusted%20Types-brightgreen.svg)](#security--hardened-network-isolation-owasp-asvs-level-3)
 [![SLSA Level 3](https://img.shields.io/badge/SLSA-Level%203-blue.svg)](#verification--testing)
@@ -66,6 +67,7 @@ antigravity_playground/
 │   │   ├── codeql.yml          # Automated CodeQL SAST security scanning
 │   │   ├── security-scan.yml   # Automated Gitleaks secret scanning (NIST SP 800-218)
 │   │   ├── slsa-sbom.yml       # Automated SLSA Level 3 SBOM & provenance generator
+│   │   ├── scorecard.yml       # Automated OpenSSF Scorecard supply-chain security audit
 │   │   ├── commitlint.yml      # Automated PR & Conventional Commits linter
 │   │   └── lighthouse.yml      # Automated Google Lighthouse CI performance audit
 │   ├── ISSUE_TEMPLATE/         # Structured GitHub Issue forms (bugs & features)

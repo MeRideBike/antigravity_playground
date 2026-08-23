@@ -27,7 +27,7 @@
    - Network binding restricted to `127.0.0.1` (loopback) by default.
    - Enforces `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`, `Referrer-Policy: strict-origin-when-cross-origin`, `Permissions-Policy`, `Cross-Origin-Opener-Policy: same-origin`, and `Cross-Origin-Resource-Policy: same-origin`.
 6. **Supply Chain Integrity & SAST Security Gates**:
-   - Continuous scanning with CodeQL, `govulncheck`, `gosec`, and `gitleaks`.
+   - Continuous scanning with CodeQL, OpenSSF Scorecard, `govulncheck`, `gosec`, and `gitleaks`.
    - Release binaries packaged with SPDX Software Bill of Materials (SBOM) and SLSA build provenance.
 
 ---
