@@ -59,6 +59,12 @@ jobs:
         with:
           go-version: '1.22'
 
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v6
+        with:
+          version: v1.60
+          args: --config=.golangci.yml
+
       - name: Go Vet Analysis
         run: go vet main.go
 
