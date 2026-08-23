@@ -8,6 +8,7 @@
 [![SLSA Level 3](https://img.shields.io/badge/SLSA-Level%203-blue.svg)](#verification--testing)
 [![golangci-lint](https://img.shields.io/badge/golangci--lint-passing-brightgreen.svg)](#verification--testing)
 [![Coverage](https://img.shields.io/badge/coverage-100%25%20core%20logic-brightgreen.svg)](#verification--testing)
+[![E2E Tests](https://img.shields.io/badge/E2E%20Tests-Passing%20(Full%20Stack)-brightgreen.svg)](#verification--testing)
 [![Benchmarks](https://img.shields.io/badge/Benchmarks-Passing%20(0%20allocs%2Fop)-brightgreen.svg)](#verification--testing)
 [![Lighthouse Score](https://img.shields.io/badge/Lighthouse-100%2F100-brightgreen.svg)](#features)
 [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
@@ -90,6 +91,7 @@ antigravity_playground/
 ├── app.js                      # Application logic (Trusted Types, metrics, build pipeline, activity log)
 ├── theme-init.js               # Fast theme bootstrap script loaded in <head>
 ├── test_dashboard.js           # Unit test suite for calculation logic, pipeline states, storage & Trusted Types
+├── test_e2e.js                 # Full-stack E2E integration test suite for server lifecycle & DOM state
 ├── main.go                     # Hardened Go HTTP server with embed.FS, Sec-Fetch & rate limiter
 ├── main_test.go                # Go integration and security verification test suite
 ├── go.mod                      # Standard-library Go module definition (zero external deps)
@@ -165,18 +167,24 @@ Start-Process index.html
 ## Verification & Testing
 
 ### 1. Run Unit Tests & Native Code Coverage (Node.js Test Runner)
-Executes unit tests for calculation boundaries, baseline values, fuzz testing, error-tolerant storage, theme sanitization, Trusted Types, and prints native coverage metrics:
+Executes unit tests for calculation boundaries, baseline values, fuzz testing, error-tolerant storage, and prints native coverage metrics:
 ```powershell
 node --test --experimental-test-coverage test_dashboard.js
 ```
 
-### 2. Run Go Backend Security & Integration Tests
+### 2. Run Full-Stack E2E Integration Tests
+Executes end-to-end server orchestration, live HTTP security header validation, and client DOM state lifecycle tests:
+```powershell
+node --test test_e2e.js
+```
+
+### 3. Run Go Backend Security, Benchmarks & Integration Tests
 Executes Go tests verifying virtual filesystem serving, Sec-Fetch metadata blocking, sliding-window rate limiting, route whitelisting, HTTP method gating, path traversal fuzzing, DoS timeouts, and security headers:
 ```powershell
 go test -v ./...
 ```
 
-### 3. Verify Code Syntax, Multi-Linters & SAST Security Scans
+### 4. Verify Code Syntax, Multi-Linters & SAST Security Scans
 ```powershell
 # Check JavaScript syntax
 node --check app.js

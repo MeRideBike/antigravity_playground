@@ -34,10 +34,17 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Setup Go (For E2E Server Orchestration)
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
       - name: Verify JavaScript Syntax
         run: |
           node --check app.js
           node --check theme-init.js
+          node --check test_dashboard.js
+          node --check test_e2e.js
 
       - name: Run Unit Tests & Collect Coverage
         run: |
@@ -48,6 +55,9 @@ jobs:
           cat test_output.txt >> $GITHUB_STEP_SUMMARY
           echo '```' >> $GITHUB_STEP_SUMMARY
           node --test test_dashboard.js
+
+      - name: Run E2E Integration & DOM Lifecycle Tests
+        run: node --test test_e2e.js
 
   golang-lint-and-sast:
     name: Go Static Analysis & SAST (Linux)
