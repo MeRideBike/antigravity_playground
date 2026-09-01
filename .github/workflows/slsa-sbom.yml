@@ -24,10 +24,10 @@ jobs:
       actions: read
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: 'stable'
 
@@ -44,7 +44,7 @@ jobs:
           output-file: 'dist/sbom.spdx.json'
 
       - name: Upload Build Artifacts & SBOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: release-artifacts-and-sbom
           path: |
